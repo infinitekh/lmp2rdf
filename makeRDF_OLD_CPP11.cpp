@@ -4,22 +4,19 @@
 #include <vector>
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
-using namespace std;
-real trapz_iso3D( vector<real> a, vector<real> b,real q) {
+real trapz_iso3D( std::vector<real> a, std::vector<real> b,real q) {
 	/*-----------------------------------------------------------------------------
 	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
 	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
 	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
 	 *-----------------------------------------------------------------------------*/
 	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
-
-	vector<real>::iterator a_iter = a.begin();
-	vector<real>::reverse_iterator a_riter = a.rbegin();
-
+	auto a_iter = a.begin();
+	auto a_riter = a.rbegin();
 	real norm = 4*M_PI;
-	vector<real>::iterator iter = b.begin();
-	vector<real>::reverse_iterator riter = b.rbegin();
-	vector<real>::iterator end = b.end();
+	auto iter = b.begin();
+	auto riter = b.rbegin();
+	auto end = b.end();
 
 	b1= *iter; bN= *riter;
 	a1= *a_iter; aN= *a_riter;
@@ -51,7 +48,7 @@ real trapz_iso3D( vector<real> a, vector<real> b,real q) {
 		return sum*dr;
 	}
 }
-real trapzoidal( vector<real> b, real dx) {
+real trapzoidal( std::vector<real> b, real dx) {
 	real sum=0; real f1, fN;
 	f1 = *(b.begin()); fN= *(b.end());
 	for (  real y : b)
@@ -61,10 +58,10 @@ real trapzoidal( vector<real> b, real dx) {
 	return sum*dx;
 }
 // simson 3/8
-real simson(vector<real> b, real dx) {
+real simson(std::vector<real> b, real dx) {
 	real sum=0; real f1, f2,f3,fNm2,fNm1, fN;
-	vector<real>::iterator begin = b.begin();
-	vector<real>::reverse_iterator rbegin = b.rbegin();
+	auto begin = b.begin();
+	auto rbegin = b.rbegin();
 	f1 = *begin; begin++;
 	f2 = *begin; begin++;
 	f3 = *begin;
@@ -101,7 +98,7 @@ void makeRDF::calcSSF () {
 
 		puts("");
 		int files=0;
-		for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+		for (auto iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 			maxAtom = (*iter)->n_atoms;
 			atoms   = (*iter)->atoms;
 			box     = &(*iter)->box;
@@ -167,9 +164,9 @@ void makeRDF::calcSSF_from_g() {
 	real r, h0_r;
 	real q,integration;
 	real S_q;
-	vector<real> x,y;
+	std::vector<real> x,y;
 	FILE* fp_S = fopen("SSF.info","w");
-	for(map<real,real>::iterator  iter=h000.begin(); iter != h000.end(); iter++) {
+	for(auto iter=h000.begin(); iter != h000.end(); iter++) {
 		 r = iter->first;
 		 h0_r = iter->second;
 		 x.push_back ( r);
@@ -223,7 +220,7 @@ void makeRDF::calcRDF_isotropy () {
 	for(i=0; i<=maxbin; i++) {
 		hist000[i] = 0;
 	}
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (auto iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -342,7 +339,7 @@ void makeRDF::calcRDF_anisotropy () {
 
 	real si_dot_sj, si_dot_rij, sj_dot_rij, si[3],sj[3];
 
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (auto iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -529,7 +526,7 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			hist220[i] = 0.; 
 		}
 	}
-	list<Snapshot*>::iterator iter = snaplist.begin();
+	auto iter = snaplist.begin();
 	atoms = (*iter)->atoms;
 	maxAtom = (*iter)->n_atoms;
 	for ( ii =0; ii<maxAtom; ii++){
@@ -692,7 +689,7 @@ void makeRDF::calcP1z( int type) {
 
 	real sz,zz, val, val1, hbox_z;
 
-	list<Snapshot*>::iterator iter = snaplist.begin();
+	auto iter = snaplist.begin();
 	box     = &(*iter)->box;
 	box_x = box->xhigh-box->xlow; 
 	box_y = box->yhigh-box->ylow; 
@@ -764,7 +761,7 @@ void makeRDF::calcP1s(int type) {
 
 	real mus, val, val1;
 
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (auto iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -960,7 +957,7 @@ void makeRDF::ZeroSpacetimeCorr () {
 
 
 void makeRDF::calcISF () {
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (auto iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		atoms   = (*iter)->atoms;
 		EvalSpacetimeCorr ();
 	}
@@ -989,9 +986,9 @@ void makeRDF::InitSpacetimeCorr(){
 	ZeroSpacetimeCorr();
 }
 
-makeRDF::makeRDF(list<Snapshot*> &_sl) { 
+makeRDF::makeRDF(std::list<Snapshot*> &_sl) { 
 	snaplist = _sl;
-	list<Snapshot*>::iterator firstsnap = (snaplist.begin());
+	auto firstsnap = (snaplist.begin());
 	firstsnap++;
 	box     = &((*firstsnap)->box);
 	double large_r = 1000, min_r, max_r;

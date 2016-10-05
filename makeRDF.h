@@ -30,11 +30,11 @@ public:
 		delete [] valST;
 	};
 	typedef enum { ISO, ANISO } T_RDF;
-	bool flag_anisotropy=0;
-	bool flag_SSF_from_g=0;
+	bool flag_anisotropy;
+	bool flag_SSF_from_g;
 
 	void calcRDF();
-	void calcRDF_inter_type (int i, int j, T_RDF rdftype = ISO);
+	void calcRDF_inter_type (int i, int j, T_RDF rdftype );
 	void calcP1z(int type);
 	void calcP1s(int type);
 	void calcSSF();
@@ -45,13 +45,13 @@ public:
 
 	bool* periodicity;
 	// intput value
-	int nFunCorr = 4;
-	int limitCorrAv=200;
-	int nBuffCorr=10;   // nValCorr = number x nBuffCorr
-	int nValCorr=500; // # of average sets
-	int step,stepCorr=1;
+	int nFunCorr ;
+	int limitCorrAv;
+	int nBuffCorr;   // nValCorr = number x nBuffCorr
+	int nValCorr; // # of average sets
+	int step,stepCorr;
 	int countCorrAv;
-	const char* filename_template= "Corr_%s.out%d";
+	static char* filename_template;
 	char filename0[100];
 	char filename1[100];
 	char filename2[100];
@@ -60,7 +60,7 @@ public:
 	TBuf *tBuf;
 	real **avAcfST, *valST;
 	int  n_valST;
-	real deltaT = 0.0001;
+	real deltaT ;
 	// Avf function
 	
 
@@ -82,10 +82,10 @@ public:
 	box3* box;
 	int maxSnap ;
 	real r_cut,q_cut;
-	int maxbin = 200;
-	int maxbinz = 5;
-	int maxbins = 10;
-	int maxbinq = 100;
+	int maxbin ;
+	int maxbinz ;
+	int maxbins ;
+	int maxbinq ;
 	real dq;
 	int maxAtom;
 private:

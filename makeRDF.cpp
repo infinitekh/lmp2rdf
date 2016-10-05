@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <memory>
 #include <vector>
+#include <numeric>
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
 using namespace std;
@@ -54,8 +55,8 @@ real trapz_iso3D( vector<real> a, vector<real> b,real q) {
 real trapzoidal( vector<real> b, real dx) {
 	real sum=0; real f1, fN;
 	f1 = *(b.begin()); fN= *(b.end());
-	for (  real y : b)
-		sum += y;
+//	for (  real y : b) sum += y;
+	sum = std::accumulate( b.begin(), b.end(), 0);
 	sum -=.5* (f1+fN);
 		
 	return sum*dx;
@@ -72,8 +73,8 @@ real simson(vector<real> b, real dx) {
 	fNm1=*rbegin; rbegin++;
 	fNm2=*rbegin;
 
-	for (  real y : b)
-		sum += y;
+//	for (  real y : b) sum += y;
+	sum = std::accumulate( b.begin(), b.end(), 0);
 	sum -= 5./8.* (f1+fN);
 	sum += 1./6.* (f2+fNm1);
 	sum -= 1./24.*(f3+fNm2);
@@ -111,7 +112,7 @@ void makeRDF::calcSSF () {
 			files++;
 			for ( id =0; id<maxAtom; id++){
 			  ppi = &atoms[id];
-				printf("\r%5dth-Snapshots(%d) %4dth-atoms(%d)", files,snaplist.size(), id+1,maxAtom);
+				printf("\r%5dth-Snapshots(%d) %4dth-atoms(%ld)", files,snaplist.size(), id+1,maxAtom);
 				fflush(stdout);
 				x = ppi->x; y = ppi->y; z = ppi->z;
 				for ( iii = 0; iii < 2*maxbinq+1; iii += 1 ) {
@@ -507,9 +508,9 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 	calcP1z ( itype) ;
 	vP1zi.resize( vP1z.size() );
 	vP1zj.resize( vP1z.size() );
-	printf("%d  \n", vP1z.size() );
-	printf("%d  \n", vP1zi.size() );
-	printf("%d  \n", vP1zj.size() );
+	printf("%ld  \n", vP1z.size() );
+	printf("%ld  \n", vP1zi.size() );
+	printf("%ld  \n", vP1zj.size() );
 	copy(vP1z.begin(), vP1z.end(), vP1zi.begin());
 	if ( itype!= jtype) calcP1z(jtype);
 	copy(vP1z.begin(), vP1z.end(), vP1zj.begin());
@@ -988,7 +989,7 @@ void makeRDF::InitSpacetimeCorr(){
 		tBuf[nb].count = - nb * nValCorr/ nBuffCorr;
 	ZeroSpacetimeCorr();
 }
-char* makeRDF::filename_template= "Corr_%s.out%d";
+char* makeRDF::filename_template= "Corr_%s.out%ld";
 makeRDF::makeRDF(list<Snapshot*> &_sl) { 
 	// C++99 not allow non-const static member init
 	flag_anisotropy=0;

@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (snaplist.size() <5){
-		fprintf(stderr, "The # of snap is too small(%d<5)!!\n", snaplist.size());
+		fprintf(stderr, "The # of snap is too small(%ld<5)!!\n", snaplist.size());
 		return 23;
 	}
 

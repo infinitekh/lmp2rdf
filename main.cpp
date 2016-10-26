@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
 	
 	while (-- argc >= 0) {
 		if (! strcmp (argv[n], "-aniso")) aniso =true;
-		else if (! strcmp (argv[n], "-i")) {typei = atoi (argv[n+1])  ; n++;argc--;}
-		else if (! strcmp (argv[n], "-j")) {typej = atoi (argv[n+1]); ; n++;argc--;}
+//		else if (! strcmp (argv[n], "-i")) {typei = atoi (argv[n+1])  ; n++;argc--;}
+//		else if (! strcmp (argv[n], "-j")) {typej = atoi (argv[n+1]); ; n++;argc--;}
 		else {
 			filename = argv[n];
 			break;
@@ -90,9 +90,14 @@ int main(int argc, char** argv) {
 
 void PrintHelp ( char *pName)
 {
-	printf ("Usage: %s [-aniso  -i itype -j jtype "
+	printf ("Usage: %s [-aniso  "
 			" input-file \n"
 			" if you want to use stdin, you should used -  \n"
 			, pName);
+/* 	printf ("Usage: %s [-aniso  -i itype -j jtype "
+ * 			" input-file \n"
+ * 			" if you want to use stdin, you should used -  \n"
+ * 			, pName);
+ */
 //	exit(0);
 }

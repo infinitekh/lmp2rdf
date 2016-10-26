@@ -90,27 +90,31 @@ public:
 	int maxAtom;
 private:
 	vector<real> vP1s;
+	vector<real> vP1zj;
+	vector<real> vz;
+	vector<real> vs;
 	vector<real> vPmus1s;
+	vector<real> vPmuz1z;
 	vector<real> vP1z;
 	vector<real> vP1zi;
-	vector<real> vP1zj;
-	vector<real> vPmuz1z;
-	vector<real> vz,vs;
+	map<real, real> F;	
+	map<real, real> M;	
+	map<real, real> M_L;	
+	map<real, real> M_T;	
+	map<real, real> S;	
+	map<real, real> c_q;	
 	map<real, real> g000;	
 	map<real, real> h000;	
 	map<real, real> h110;	
 	map<real, real> h112;	
 	map<real, real> h220;	
-	map<real, real> S;	
+	map<real, real> h_q;	
+
 /* 	map<real, real> S_qr;	
  * 	map<real, real> S_qi;	
  * 	map<real, real> qlist;	
  */
 
-	map<real, real> F;	
-	map<real, real> M;	
-	map<real, real> M_L;	
-	map<real, real> M_T;	
 	void calcRDF_isotropy ();
 	void calcRDF_cotype (int i);
 	void calcRDF_anisotropy ();

@@ -6,6 +6,180 @@
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
 using namespace std;
+real trapz_iso3D_backward( std::map<real,real> map, real q) {
+	/*-----------------------------------------------------------------------------
+	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
+	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
+	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
+	 *-----------------------------------------------------------------------------*/
+	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi, a2;
+	std::map<real,real>::iterator iter = map.begin();
+	std::map<real,real>::reverse_iterator riter = map.rbegin();
+	std::map<real,real>::iterator end = map.end();
+	real norm = 4*M_PI;
+
+	a1= iter->first;  aN= riter->first;
+	b1= iter->second; bN= riter->second;
+
+	iter++;riter++; end--;
+	a2 = iter->first;
+	dr = a2 - a1;
+
+	if( q== 0) {
+		f1= norm* a1 * a1 * b1;
+		fN=  norm* aN * aN * bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++) {
+			ai= iter->first; bi= iter->second;
+			fi=  norm* ai*ai* bi;
+			sum += fi;
+		}
+		return sum*dr/pow(2.*M_PI,3);
+	}
+	else{
+		f1= norm* a1 *(sin(q*a1)/q)* b1;
+		fN=  norm* aN *(sin(q*aN)/q)* bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++) {
+			ai= iter->first; bi= iter->second;
+			fi=  norm* ai*(sin(ai*q)/q) * bi;
+			sum += fi;
+		}
+		return sum*dr/pow(2.*M_PI,3);
+	}
+}
+real trapz_iso3D_forward( std::map<real,real> map, real q) {
+	/*-----------------------------------------------------------------------------
+	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
+	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
+	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
+	 *-----------------------------------------------------------------------------*/
+	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi, a2;
+	std::map<real,real>::iterator iter = map.begin();
+	std::map<real,real>::reverse_iterator riter = map.rbegin();
+	std::map<real,real>::iterator end = map.end();
+	real norm = 4*M_PI;
+
+	a1= iter->first;  aN= riter->first;
+	b1= iter->second; bN= riter->second;
+
+	iter++;riter++; end--;
+	a2 = iter->first;
+	dr = a2 - a1;
+
+	if( q== 0) {
+		f1= norm* a1 * a1 * b1;
+		fN=  norm* aN * aN * bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++) {
+			ai= iter->first; bi= iter->second;
+			fi=  norm* ai*ai* bi;
+			sum += fi;
+		}
+		return sum*dr;
+	}
+	else{
+		f1= norm* a1 *(sin(q*a1)/q)* b1;
+		fN=  norm* aN *(sin(q*aN)/q)* bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++) {
+			ai= iter->first; bi= iter->second;
+			fi=  norm* ai*(sin(ai*q)/q) * bi;
+			sum += fi;
+		}
+		return sum*dr;
+	}
+}
+real trapz_iso3D_forward( std::vector<real> a, std::vector<real> b,real q) {
+	/*-----------------------------------------------------------------------------
+	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
+	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
+	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
+	 *-----------------------------------------------------------------------------*/
+	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
+	vector<real>::iterator a_iter = a.begin();
+	vector<real>::reverse_iterator a_riter = a.rbegin();
+	real norm = 4*M_PI;
+	vector<real>::iterator iter = b.begin();
+	vector<real>::reverse_iterator riter = b.rbegin();
+	vector<real>::iterator end = b.end();
+
+	b1= *iter; bN= *riter;
+	a1= *a_iter; aN= *a_riter;
+
+	iter++;a_iter++; end--;
+
+	dr = *a_iter - a1;
+
+	if( q== 0) {
+		f1= norm* a1 * a1 * b1;
+		fN=  norm* aN * aN * bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++,a_iter++) {
+			ai= *a_iter; bi= *iter;
+			fi=  norm* ai*ai* bi;
+			sum += fi;
+		}
+		return sum*dr;
+	}
+	else{
+		f1= norm* a1 *(sin(q*a1)/q)* b1;
+		fN=  norm* aN *(sin(q*aN)/q)* bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++,a_iter++) {
+			ai= *a_iter; bi= *iter;
+			fi=  norm* ai*(sin(ai*q)/q) * bi;
+			sum += fi;
+		}
+		return sum*dr;
+	}
+}
+real trapz_iso3D_backward( std::vector<real> a, std::vector<real> b,real q) {
+	/*-----------------------------------------------------------------------------
+	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
+	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
+	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
+	 *  backward   q-> r    r -> q   and   -> frac 2 pi  
+	 *  fourier transform convention : r -> k (1)   k -> r ( 1/2pi)  
+	 *-----------------------------------------------------------------------------*/
+	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
+	vector<real>::iterator a_iter = a.begin();
+	std::vector<real>::reverse_iterator a_riter = a.rbegin();
+	real norm = 4*M_PI;
+	vector<real>::iterator iter = b.begin();
+	std::vector<real>::reverse_iterator riter = b.rbegin();
+	vector<real>::iterator end = b.end();
+
+	b1= *iter; bN= *riter;
+	a1= *a_iter; aN= *a_riter;
+
+	iter++;a_iter++; end--;
+
+	dr = *a_iter - a1;
+
+	if( q== 0) {
+		f1= norm* a1 * a1 * b1;
+		fN=  norm* aN * aN * bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++,a_iter++) {
+			ai= *a_iter; bi= *iter;
+			fi=  norm* ai*ai* bi;
+			sum += fi;
+		}
+		return sum*dr/pow(2.*M_PI,3);
+	}
+	else{
+		f1= norm* a1 *(sin(q*a1)/q)* b1;
+		fN=  norm* aN *(sin(q*aN)/q)* bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++,a_iter++) {
+			ai= *a_iter; bi= *iter;
+			fi=  norm* ai*(sin(ai*q)/q) * bi;
+			sum += fi;
+		}
+		return sum*dr/pow(2.*M_PI,3);
+	}
+}
 real trapz_iso3D( vector<real> a, vector<real> b,real q) {
 	/*-----------------------------------------------------------------------------
 	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
@@ -112,7 +286,7 @@ void makeRDF::calcSSF () {
 			files++;
 			for ( id =0; id<maxAtom; id++){
 			  ppi = &atoms[id];
-				printf("\r%5dth-Snapshots(%d) %4dth-atoms(%ld)", files,snaplist.size(), id+1,maxAtom);
+				printf("\r%5dth-Snapshots(%ld) %4dth-atoms(%d)", files,snaplist.size(), id+1,maxAtom);
 				fflush(stdout);
 				x = ppi->x; y = ppi->y; z = ppi->z;
 				for ( iii = 0; iii < 2*maxbinq+1; iii += 1 ) {
@@ -165,12 +339,13 @@ void makeRDF::calcSSF () {
 
 void makeRDF::calcSSF_from_g() {
 	int size = h000.size();
-	real r, h0_r;
-	real q,integration;
+	real r, h0_r, c_r, h_mod;
+	real q,h_k, c_k;
 	real S_q;
-	vector<real> x,y;
+	std::vector<real> x,y;
 	FILE* fp_S = fopen("SSF.info","w");
-	for(map<real,real>::iterator  iter=h000.begin(); iter != h000.end(); iter++) {
+	fprintf(fp_S,"##q S_k h_k c_k\n");
+	for(std::map<real,real>::iterator  iter=h000.begin(); iter != h000.end(); iter++) {
 		 r = iter->first;
 		 h0_r = iter->second;
 		 x.push_back ( r);
@@ -180,14 +355,33 @@ void makeRDF::calcSSF_from_g() {
 	real phi = maxAtom / Vol;
 	for(int i=0; i<maxbinq ; i++) {
 		q = i * dq;
-		integration = trapz_iso3D( x,y,q);
-		S_q = 1.+ phi*integration;
-		fprintf(fp_S,"%lf %lf\n", q, S_q);
+		h_k = trapz_iso3D_forward( x,y,q);
+		S_q = 1.+ phi*h_k;
+		c_k = h_k / S_q;
     S.insert( std::pair<real,real>(q,S_q ) );
+    h_q.insert( std::pair<real,real>(q, h_k ) );
+    c_q.insert( std::pair<real,real>(q, c_k ) );
+
+		fprintf(fp_S,"%lf %lf %lf %lf\n", q, S_q, h_k, c_k);
 	}
 	fclose(fp_S);
-	
+	/*-----------------------------------------------------------------------------
+	 * we get c_r from c_k using Backward Fourier transform
+	 *-----------------------------------------------------------------------------*/
 
+
+	FILE* fp_c_r = fopen("DCF.info","w");
+	fprintf(fp_c_r,"##r c_r\n");
+
+	for(int i=0; i<maxbin ; i++) {
+		r = i * var_r;
+		c_r = trapz_iso3D_backward( c_q,r);
+		h_mod = trapz_iso3D_backward( h_q,r);
+
+		fprintf(fp_c_r,"%lf %lf %lf \n", r, c_r, h_mod );
+	}
+
+	fclose(fp_c_r);
 	
 }
 

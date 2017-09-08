@@ -6,6 +6,46 @@
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
 using namespace std;
+
+real trapz_iso3D_forward_with_l2( std::vector<real> a, std::vector<real> b,real q) {
+	/*-----------------------------------------------------------------------------
+	 *  calulation fourier transform for l=2 iso3D function   
+	 *   -  4pi \int_0^infty dr h_112(r) * j_2(q r)  *r^2
+	 *   j_2 (x) = (3/x^2 - 1) sin(x)/x   - 3cos(x)/x^2
+	 *   j_2 (0) == 0
+	 *-----------------------------------------------------------------------------*/
+	real sum=0,dr,qr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
+	vector<real>::iterator a_iter = a.begin();
+	vector<real>::reverse_iterator a_riter = a.rbegin();
+	real norm = 4*M_PI;
+	vector<real>::iterator iter = b.begin();
+	vector<real>::reverse_iterator riter = b.rbegin();
+	vector<real>::iterator end = b.end();
+
+	b1= *iter; bN= *riter;
+	a1= *a_iter; aN= *a_riter;
+
+	iter++;a_iter++; end--;
+
+	dr = *a_iter - a1;
+	if( q== 0) {
+		return 0;
+	}
+	else{
+		real qr1 = a1*q, qrN = aN*q;
+		f1= a1*a1 *( (3./(qr1*qr1)-1)* sin(qr1)/qr1 - 3.*cos(qr1)/(qr1*qr1)     )* b1;
+		fN= aN*aN *( (3./(qrN*qrN)-1)* sin(qrN)/qrN - 3.*cos(qrN)/(qrN*qrN)     )* bN;
+		sum = .5*(f1+fN);
+		for ( ;iter!=end; iter++,a_iter++) {
+			ai= *a_iter; bi= *iter;
+			qr = q* ai;
+			fi= ai*ai *( (3./(qr*qr)-1)* sin(qr)/qr - 3.*cos(qr)/(qr*qr)     )* bi;
+			sum += fi;
+		}
+		return -norm*sum*dr;
+	}
+}
+
 real trapz_iso3D_backward( std::map<real,real> map, real q) {
 	/*-----------------------------------------------------------------------------
 	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
@@ -339,30 +379,42 @@ void makeRDF::calcSSF () {
 
 void makeRDF::calcSSF_from_g() {
 	int size = h000.size();
-	real r, h0_r, c_r, h_mod;
-	real q,h_k, c_k;
+	real r, h0_r, c_r, h_mod, h112_r;
+	real q,h_k, c_k, h112_k;
 	real S_q;
-	std::vector<real> x,y;
+	std::vector<real> x,y, y2;
 	FILE* fp_S = fopen("SSF.info","w");
-	fprintf(fp_S,"##q S_k h_k c_k\n");
+	fprintf(fp_S,"##q S_k h_k c_k h112_k\n");
 	for(std::map<real,real>::iterator  iter=h000.begin(); iter != h000.end(); iter++) {
 		 r = iter->first;
 		 h0_r = iter->second;
 		 x.push_back ( r);
 		 y.push_back ( h0_r);
+		 y2.push_back ( h112[r] );
 	}
+
+/* 	for( int i=0; i<size; i++) {
+ * 		 r = h000[i].first;
+ * 		 h0_r = h000[i].second;
+ * 		 h112_r = h112[i].second;
+ * 		 x.push_back ( r);
+ * 		 y.push_back ( h0_r);
+ * 		 y2.push_back ( h112_r);
+ * 	}
+ */
 	real Vol = box_x*box_y*box_z;
 	real phi = maxAtom / Vol;
 	for(int i=0; i<maxbinq ; i++) {
 		q = i * dq;
 		h_k = trapz_iso3D_forward( x,y,q);
+		h112_k = trapz_iso3D_forward_with_l2( x,y,q);
 		S_q = 1.+ phi*h_k;
 		c_k = h_k / S_q;
     S.insert( std::pair<real,real>(q,S_q ) );
     h_q.insert( std::pair<real,real>(q, h_k ) );
     c_q.insert( std::pair<real,real>(q, c_k ) );
 
-		fprintf(fp_S,"%lf %lf %lf %lf\n", q, S_q, h_k, c_k);
+		fprintf(fp_S,"%lf %lf %lf %lf %lf\n", q, S_q, h_k, c_k, h112_k);
 	}
 	fclose(fp_S);
 	/*-----------------------------------------------------------------------------
@@ -371,7 +423,7 @@ void makeRDF::calcSSF_from_g() {
 
 
 	FILE* fp_c_r = fopen("DCF.info","w");
-	fprintf(fp_c_r,"##r c_r\n");
+	fprintf(fp_c_r,"##r c_r h_mod\n");
 
 	for(int i=0; i<maxbin ; i++) {
 		r = i * var_r;
@@ -488,6 +540,9 @@ void makeRDF::calcRDF_isotropy () {
 		val000 = hist000[i]/norm000/(rr*rr+var_r*var_r*12.);
 		g000.insert( std::pair<real,real>( rrr,val000 ) );
 		h000.insert( std::pair<real,real>( rrr,val000-1. ) );
+		h110.insert( std::pair<real,real>( rrr,0.0 ) );
+		h112.insert( std::pair<real,real>( rrr,0.0 ) );
+		h220.insert( std::pair<real,real>( rrr,0.0 ) );
 		fprintf(fp_rdf,"%lf %lf\n", rrr,val000);
 	}
 	i=0; rhobin =0; zibin=0; zjbin=0;

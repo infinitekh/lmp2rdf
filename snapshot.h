@@ -31,6 +31,11 @@ struct atom {
 	atom(int id, int type, 
 			real x, real y, real z,
 			real mux,real muy, real muz) {
+		init( id,  type, x,  y,  z, mux, muy,  muz);
+	}
+	void init(int id, int type, 
+			real x, real y, real z,
+			real mux,real muy, real muz) {
 		this->id=id; this->type=type;
 		this->x=x;this->y=y;this->z=z;
 		mu1 = sqrt(mux*mux+muy*muy+muz*muz);
@@ -49,13 +54,28 @@ struct box3 {
 typedef struct Snapshot {
 	bigint timestep;
 	int    n_atoms;
-	struct box3 box;
-	struct atom* atoms;
 	int    n_types;
+	long  bytes;
+	struct atom* atoms;
+	struct box3 box;
+	Snapshot(){
+	}
 	Snapshot(bigint _ts,int _n_atoms){
+		init(_ts,_n_atoms);
+	}
+/* 	Snapshot(const  Snaptshot &T) {
+ * 		timestep    = T.timestep;
+ * 		n_atoms     = T.n_atoms;
+ * 		box         = T.box;
+ * 		atoms       = T.atoms;
+ * 		n_types     = T.n_types;
+ * 	}
+ */
+	void init(bigint _ts,int _n_atoms){
 		this->timestep = _ts;
 		n_atoms = _n_atoms;
 		atoms = new struct atom[n_atoms];
+		bytes = sizeof(Snapshot) + sizeof(atom) * n_atoms;
 	}
 	void setBox(real xl,real xh, real yl,real yh, real zl,real zh) {
 		box.xlow=xl;box.xhigh=xh;
@@ -77,6 +97,7 @@ typedef struct Snapshot {
 	}
 	
 	~Snapshot() {
+
 		delete [] atoms;
 	}
 } Snapshot;
@@ -84,8 +105,13 @@ typedef struct Snapshot {
 
 int compare_atom_type(const void *, const void *);
 struct Snapshot* read_dump(FILE*);
+typedef enum { 
+	SUCCESS, ERR1,ERR2,ERR3,ERR4
+} ENUM_DUMP;
+ENUM_DUMP get_dump(FILE*,Snapshot*);
 void read_lines(int n,FILE*);
 void* error( const char *);
+
 
 typedef std::list<Snapshot*> l_snapshot;
 

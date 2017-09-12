@@ -2,7 +2,7 @@
 #define  MAKERDF_H_INC
 
 #include <map>
-#include <list>
+//#include <list>
 #include <vector>
 #include <algorithm>
 #include "snapshot.h"
@@ -21,7 +21,7 @@ typedef struct {
 
 class makeRDF {
 public:
-	makeRDF(std::list<Snapshot*> &_sl) ;
+	makeRDF(std::vector<Snapshot*> &_sl) ;
 	~makeRDF() { 
 		
 		delete [] tBuf;
@@ -102,7 +102,7 @@ private:
 	map<real, real> M_L;	
 	map<real, real> M_T;	
 	map<real, real> S;	
-	map<real, real> c_q;	
+    map<real, real> c_q;
 	map<real, real> g000;	
 	map<real, real> h000;	
 	map<real, real> h110;	
@@ -115,6 +115,8 @@ private:
  * 	map<real, real> qlist;	
  */
 
+    void calcRDF_anisotropy_snap (Snapshot* snap);
+
 	void calcRDF_isotropy ();
 	void calcRDF_cotype (int i);
 	void calcRDF_anisotropy ();
@@ -122,7 +124,7 @@ private:
 
 	void calcIntegrated_h000();
 	real var_k, var_r;
-	std::list<Snapshot*> snaplist;
+	std::vector<Snapshot*> snaplist;
 	atom *atoms,*ppi,*ppj;
 };
 

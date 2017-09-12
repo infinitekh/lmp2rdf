@@ -316,7 +316,7 @@ void makeRDF::calcSSF () {
 
 		puts("");
 		int files=0;
-		for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+		for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 			maxAtom = (*iter)->n_atoms;
 			atoms   = (*iter)->atoms;
 			box     = &(*iter)->box;
@@ -470,7 +470,7 @@ void makeRDF::calcRDF_isotropy () {
 	for(i=0; i<=maxbin; i++) {
 		hist000[i] = 0;
 	}
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -562,6 +562,7 @@ void makeRDF::calcRDF_isotropy () {
 	fclose(fp_rdf);
 	fclose(fp_rdfcyl);
 }
+
 void makeRDF::calcRDF_anisotropy () {
 	int i, ii, jj;
 	int nsnap =0;
@@ -592,7 +593,7 @@ void makeRDF::calcRDF_anisotropy () {
 
 	real si_dot_sj, si_dot_rij, sj_dot_rij, si[3],sj[3];
 
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -721,6 +722,7 @@ void makeRDF::calcRDF_anisotropy () {
 	fclose(fp_rdf);
 	fclose(fp_rdfcyl);
 }
+
 void makeRDF::calcRDF_cotype (int itype) {
 }
 void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
@@ -779,7 +781,7 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			hist220[i] = 0.; 
 		}
 	}
-	list<Snapshot*>::iterator iter = snaplist.begin();
+	vector<Snapshot*>::iterator iter = snaplist.begin();
 	atoms = (*iter)->atoms;
 	maxAtom = (*iter)->n_atoms;
 	for ( ii =0; ii<maxAtom; ii++){
@@ -942,7 +944,7 @@ void makeRDF::calcP1z( int type) {
 
 	real sz,zz, val, val1, hbox_z;
 
-	list<Snapshot*>::iterator iter = snaplist.begin();
+	vector<Snapshot*>::iterator iter = snaplist.begin();
 	box     = &(*iter)->box;
 	box_x = box->xhigh-box->xlow; 
 	box_y = box->yhigh-box->ylow; 
@@ -1014,7 +1016,7 @@ void makeRDF::calcP1s(int type) {
 
 	real mus, val, val1;
 
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atoms   = (*iter)->atoms;
@@ -1205,12 +1207,13 @@ void makeRDF::ZeroSpacetimeCorr () {
 	countCorrAv =0;
 	for (j =0; j<3*nFunCorr;j++) 
 		for (n=0; n< nValCorr; n ++) 
-			avAcfST[j][n] = 0.;
+            avAcfST[j][n] = 0.;
 }
 
 
+
 void makeRDF::calcISF () {
-	for (list<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		atoms   = (*iter)->atoms;
 		EvalSpacetimeCorr ();
 	}
@@ -1239,7 +1242,7 @@ void makeRDF::InitSpacetimeCorr(){
 	ZeroSpacetimeCorr();
 }
 char* makeRDF::filename_template= "Corr_%s.out%ld";
-makeRDF::makeRDF(list<Snapshot*> &_sl) { 
+makeRDF::makeRDF(vector<Snapshot*> &_sl) { 
 	// C++99 not allow non-const static member init
 	flag_anisotropy=0;
 	flag_SSF_from_g=0;
@@ -1259,7 +1262,7 @@ makeRDF::makeRDF(list<Snapshot*> &_sl) {
 
 
 	snaplist = _sl;
-	list<Snapshot*>::iterator firstsnap = (snaplist.begin());
+	vector<Snapshot*>::iterator firstsnap = (snaplist.begin());
 	firstsnap++;
 	box     = &((*firstsnap)->box);
 	double large_r = 1000, min_r, max_r;

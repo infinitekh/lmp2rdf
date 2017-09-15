@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 	//	makerRdf.calcRDF();
 	puts("calc RDF intertype");
 	makerRdf.calcRDF_inter_type(1,1, makerRdf.ANISO);
-	makerRdf.calcRDF_inter_type(1,2, makerRdf.ISO);
+//	makerRdf.calcRDF_inter_type(1,2, makerRdf.ISO);
 	puts("calc RDF end");
 	makerRdf.calcSSF_from_g ();
 /* 	makerRdf.calcSSF();

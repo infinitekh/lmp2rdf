@@ -2,299 +2,11 @@
 #include <unistd.h>
 #include <memory>
 #include <vector>
-#include <numeric>
+#include "kh_math_fourier.h"
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
 using namespace std;
 
-real trapz_iso3D_forward_with_l2( std::vector<real> a, std::vector<real> b,real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation fourier transform for l=2 iso3D function   
-	 *   -  4pi \int_0^infty dr h_112(r) * j_2(q r)  *r^2
-	 *   j_2 (x) = (3/x^2 - 1) sin(x)/x   - 3cos(x)/x^2
-	 *   j_2 (0) == 0
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr,qr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
-	vector<real>::iterator a_iter = a.begin();
-	vector<real>::reverse_iterator a_riter = a.rbegin();
-	real norm = 4*M_PI;
-	vector<real>::iterator iter = b.begin();
-	vector<real>::reverse_iterator riter = b.rbegin();
-	vector<real>::iterator end = b.end();
-
-	b1= *iter; bN= *riter;
-	a1= *a_iter; aN= *a_riter;
-
-	iter++;a_iter++; end--;
-
-	dr = *a_iter - a1;
-	if( q== 0) {
-		return 0;
-	}
-	else{
-		real qr1 = a1*q, qrN = aN*q;
-		f1= a1*a1 *( (3./(qr1*qr1)-1)* sin(qr1)/qr1 - 3.*cos(qr1)/(qr1*qr1)     )* b1;
-		fN= aN*aN *( (3./(qrN*qrN)-1)* sin(qrN)/qrN - 3.*cos(qrN)/(qrN*qrN)     )* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			qr = q* ai;
-			fi= ai*ai *( (3./(qr*qr)-1)* sin(qr)/qr - 3.*cos(qr)/(qr*qr)     )* bi;
-			sum += fi;
-		}
-		return -norm*sum*dr;
-	}
-}
-
-real trapz_iso3D_backward( std::map<real,real> map, real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
-	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
-	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi, a2;
-	std::map<real,real>::iterator iter = map.begin();
-	std::map<real,real>::reverse_iterator riter = map.rbegin();
-	std::map<real,real>::iterator end = map.end();
-	real norm = 4*M_PI;
-
-	a1= iter->first;  aN= riter->first;
-	b1= iter->second; bN= riter->second;
-
-	iter++;riter++; end--;
-	a2 = iter->first;
-	dr = a2 - a1;
-
-	if( q== 0) {
-		f1= norm* a1 * a1 * b1;
-		fN=  norm* aN * aN * bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++) {
-			ai= iter->first; bi= iter->second;
-			fi=  norm* ai*ai* bi;
-			sum += fi;
-		}
-		return sum*dr/pow(2.*M_PI,3);
-	}
-	else{
-		f1= norm* a1 *(sin(q*a1)/q)* b1;
-		fN=  norm* aN *(sin(q*aN)/q)* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++) {
-			ai= iter->first; bi= iter->second;
-			fi=  norm* ai*(sin(ai*q)/q) * bi;
-			sum += fi;
-		}
-		return sum*dr/pow(2.*M_PI,3);
-	}
-}
-real trapz_iso3D_forward( std::map<real,real> map, real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
-	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
-	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi, a2;
-	std::map<real,real>::iterator iter = map.begin();
-	std::map<real,real>::reverse_iterator riter = map.rbegin();
-	std::map<real,real>::iterator end = map.end();
-	real norm = 4*M_PI;
-
-	a1= iter->first;  aN= riter->first;
-	b1= iter->second; bN= riter->second;
-
-	iter++;riter++; end--;
-	a2 = iter->first;
-	dr = a2 - a1;
-
-	if( q== 0) {
-		f1= norm* a1 * a1 * b1;
-		fN=  norm* aN * aN * bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++) {
-			ai= iter->first; bi= iter->second;
-			fi=  norm* ai*ai* bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-	else{
-		f1= norm* a1 *(sin(q*a1)/q)* b1;
-		fN=  norm* aN *(sin(q*aN)/q)* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++) {
-			ai= iter->first; bi= iter->second;
-			fi=  norm* ai*(sin(ai*q)/q) * bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-}
-real trapz_iso3D_forward( std::vector<real> a, std::vector<real> b,real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
-	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
-	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
-	vector<real>::iterator a_iter = a.begin();
-	vector<real>::reverse_iterator a_riter = a.rbegin();
-	real norm = 4*M_PI;
-	vector<real>::iterator iter = b.begin();
-	vector<real>::reverse_iterator riter = b.rbegin();
-	vector<real>::iterator end = b.end();
-
-	b1= *iter; bN= *riter;
-	a1= *a_iter; aN= *a_riter;
-
-	iter++;a_iter++; end--;
-
-	dr = *a_iter - a1;
-
-	if( q== 0) {
-		f1= norm* a1 * a1 * b1;
-		fN=  norm* aN * aN * bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*ai* bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-	else{
-		f1= norm* a1 *(sin(q*a1)/q)* b1;
-		fN=  norm* aN *(sin(q*aN)/q)* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*(sin(ai*q)/q) * bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-}
-real trapz_iso3D_backward( std::vector<real> a, std::vector<real> b,real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
-	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
-	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
-	 *  backward   q-> r    r -> q   and   -> frac 2 pi  
-	 *  fourier transform convention : r -> k (1)   k -> r ( 1/2pi)  
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
-	vector<real>::iterator a_iter = a.begin();
-	std::vector<real>::reverse_iterator a_riter = a.rbegin();
-	real norm = 4*M_PI;
-	vector<real>::iterator iter = b.begin();
-	std::vector<real>::reverse_iterator riter = b.rbegin();
-	vector<real>::iterator end = b.end();
-
-	b1= *iter; bN= *riter;
-	a1= *a_iter; aN= *a_riter;
-
-	iter++;a_iter++; end--;
-
-	dr = *a_iter - a1;
-
-	if( q== 0) {
-		f1= norm* a1 * a1 * b1;
-		fN=  norm* aN * aN * bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*ai* bi;
-			sum += fi;
-		}
-		return sum*dr/pow(2.*M_PI,3);
-	}
-	else{
-		f1= norm* a1 *(sin(q*a1)/q)* b1;
-		fN=  norm* aN *(sin(q*aN)/q)* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*(sin(ai*q)/q) * bi;
-			sum += fi;
-		}
-		return sum*dr/pow(2.*M_PI,3);
-	}
-}
-real trapz_iso3D( vector<real> a, vector<real> b,real q) {
-	/*-----------------------------------------------------------------------------
-	 *  calulation isotropic function fourier transform  F[h(r)] (q)  
-	 *  \int_0^infty dr h(r) * sin(qr)/(qr) * 4*pi*r^2
-	 *  if q =0     ->  \int_0^infty dr h(r) * 4*pi*r^2           
-	 *-----------------------------------------------------------------------------*/
-	real sum=0,dr; real a1, aN, b1,bN,f1,fN,ai,bi,fi;
-
-	vector<real>::iterator a_iter = a.begin();
-	vector<real>::reverse_iterator a_riter = a.rbegin();
-
-	real norm = 4*M_PI;
-	vector<real>::iterator iter = b.begin();
-	vector<real>::reverse_iterator riter = b.rbegin();
-	vector<real>::iterator end = b.end();
-
-	b1= *iter; bN= *riter;
-	a1= *a_iter; aN= *a_riter;
-
-	iter++;a_iter++; end--;
-
-	dr = *a_iter - a1;
-
-	if( q== 0) {
-		f1= norm* a1 * a1 * b1;
-		fN=  norm* aN * aN * bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*ai* bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-	else{
-		f1= norm* a1 *(sin(q*a1)/q)* b1;
-		fN=  norm* aN *(sin(q*aN)/q)* bN;
-		sum = .5*(f1+fN);
-		for ( ;iter!=end; iter++,a_iter++) {
-			ai= *a_iter; bi= *iter;
-			fi=  norm* ai*(sin(ai*q)/q) * bi;
-			sum += fi;
-		}
-		return sum*dr;
-	}
-}
-real trapzoidal( vector<real> b, real dx) {
-	real sum=0; real f1, fN;
-	f1 = *(b.begin()); fN= *(b.end());
-//	for (  real y : b) sum += y;
-	sum = std::accumulate( b.begin(), b.end(), 0);
-	sum -=.5* (f1+fN);
-		
-	return sum*dx;
-}
-// simson 3/8
-real simson(vector<real> b, real dx) {
-	real sum=0; real f1, f2,f3,fNm2,fNm1, fN;
-	vector<real>::iterator begin = b.begin();
-	vector<real>::reverse_iterator rbegin = b.rbegin();
-	f1 = *begin; begin++;
-	f2 = *begin; begin++;
-	f3 = *begin;
-	fN = *rbegin; rbegin++;
-	fNm1=*rbegin; rbegin++;
-	fNm2=*rbegin;
-
-//	for (  real y : b) sum += y;
-	sum = std::accumulate( b.begin(), b.end(), 0);
-	sum -= 5./8.* (f1+fN);
-	sum += 1./6.* (f2+fNm1);
-	sum -= 1./24.*(f3+fNm2);
-		
-	return sum*dx;
-}
 void makeRDF::calcSSF () {
 	if(flag_SSF_from_g)
 		calcSSF_from_g ();
@@ -378,59 +90,66 @@ void makeRDF::calcSSF () {
 }
 
 void makeRDF::calcSSF_from_g() {
-	int size = h000.size();
 	real r, h0_r, c_r, h_mod, h112_r;
-	real q,h_k, c_k, h112_k;
+	real q,h000_k, c_k, h112_k, h110_k, h220_k;
 	real S_q;
-	std::vector<real> x,y, y2;
+	std::vector<real> x,y, y112, y11,y22;
+	std::vector<real> v_c_q, v_h_q, v_h11_q, v_h22_q, v_S_q;
+	
 	FILE* fp_S = fopen("SSF.info","w");
 	fprintf(fp_S,"##q S_k h_k c_k h112_k\n");
-	for(std::map<real,real>::iterator  iter=h000.begin(); iter != h000.end(); iter++) {
-		 r = iter->first;
-		 h0_r = iter->second;
-		 x.push_back ( r);
-		 y.push_back ( h0_r);
-		 y2.push_back ( h112[r] );
+	for (int i=1; i<=maxbin; i++){
+		 x.push_back ( ca_radius[i]);
+		 y.push_back ( ca_g000[i]-1);
+		 y11.push_back (ca_h110[i]);
+		 y22.push_back (ca_h220[i]);
+		 y112.push_back ( ca_h112[i] );
 	}
+	ca_q_radius = new double [maxbinq];
+	ca_c_q = new double[maxbinq];
+	ca_h000_q = new double[maxbinq];
+	ca_h110_q = new double[maxbinq];
+	ca_h112_q = new double[maxbinq];
+	ca_h220_q = new double[maxbinq];
+	ca_S_q = new double[maxbinq];
 
-/* 	for( int i=0; i<size; i++) {
- * 		 r = h000[i].first;
- * 		 h0_r = h000[i].second;
- * 		 h112_r = h112[i].second;
- * 		 x.push_back ( r);
- * 		 y.push_back ( h0_r);
- * 		 y2.push_back ( h112_r);
- * 	}
- */
 	real Vol = box_x*box_y*box_z;
 	real phi = maxAtom / Vol;
 	for(int i=0; i<maxbinq ; i++) {
-		q = i * dq;
-		h_k = trapz_iso3D_forward( x,y,q);
-		h112_k = trapz_iso3D_forward_with_l2( x,y,q);
-		S_q = 1.+ phi*h_k;
-		c_k = h_k / S_q;
-    S.insert( std::pair<real,real>(q,S_q ) );
-    h_q.insert( std::pair<real,real>(q, h_k ) );
-    c_q.insert( std::pair<real,real>(q, c_k ) );
-
-		fprintf(fp_S,"%lf %lf %lf %lf %lf\n", q, S_q, h_k, c_k, h112_k);
+		ca_q_radius[i] = i * dq;
+		ca_h000_q[i] = trapz_iso3D_forward( x,y,q);
+		ca_h110_q[i] = trapz_iso3D_forward( x,y,q);
+		ca_h220_q[i] = trapz_iso3D_forward( x,y,q);
+		ca_h112_q[i] = trapz_iso3D_forward_with_l2( x,y,q);
+		ca_S_q[i] = 1.+ phi*h000_k;
+		ca_c_q[i] = h000_k / S_q;
+	}
+	for(int i=0; i<maxbinq ; i++) {
+		fprintf(fp_S,"%lf %lf %lf %lf %lf\n", ca_q_radius[i], 
+				ca_S_q[i], ca_h000_q[i], ca_c_q[i], ca_h112_q[i]);
 	}
 	fclose(fp_S);
 	/*-----------------------------------------------------------------------------
 	 * we get c_r from c_k using Backward Fourier transform
 	 *-----------------------------------------------------------------------------*/
 
+	
+	ca_c_r = new double[maxbin];
+	ca_h_mod = new double[maxbin];
 
 	FILE* fp_c_r = fopen("DCF.info","w");
 	fprintf(fp_c_r,"##r c_r h_mod\n");
-
+	
 	for(int i=0; i<maxbin ; i++) {
-		r = i * var_r;
-		c_r = trapz_iso3D_backward( c_q,r);
-		h_mod = trapz_iso3D_backward( h_q,r);
-
-		fprintf(fp_c_r,"%lf %lf %lf \n", r, c_r, h_mod );
+		real r_ = ca_radius[i];
+		ca_c_r[i]   = trapz_iso3D_backward_n(ca_q_radius, ca_c_q,
+				r_,maxbinq);
+		ca_h_mod[i] = trapz_iso3D_backward_n(ca_q_radius, ca_h000_q,
+				r_,maxbinq);
+	}
+	for(int i=0; i<maxbin ; i++) {
+		fprintf(fp_c_r,"%lf %lf %lf \n", ca_radius[i], 
+				ca_c_r[i], ca_h_mod[i] );
 	}
 
 	fclose(fp_c_r);
@@ -538,11 +257,6 @@ void makeRDF::calcRDF_isotropy () {
 		rrr = (i + 0.5) * var_r;
 		rr  = (i - 0.5) * var_r;
 		val000 = hist000[i]/norm000/(rr*rr+var_r*var_r*12.);
-		g000.insert( std::pair<real,real>( rrr,val000 ) );
-		h000.insert( std::pair<real,real>( rrr,val000-1. ) );
-		h110.insert( std::pair<real,real>( rrr,0.0 ) );
-		h112.insert( std::pair<real,real>( rrr,0.0 ) );
-		h220.insert( std::pair<real,real>( rrr,0.0 ) );
 		fprintf(fp_rdf,"%lf %lf\n", rrr,val000);
 	}
 	i=0; rhobin =0; zibin=0; zjbin=0;
@@ -572,23 +286,42 @@ void makeRDF::calcRDF_anisotropy () {
 	real hbox_x,hbox_y,hbox_z;
 
 
-	bigint* hist000 = new bigint[maxbin+1];
-	double* hist110 = new double[maxbin+1];
-	double* hist112 = new double[maxbin+1];
-	double* hist220 = new double[maxbin+1];
-	bigint* histcyl000 = new bigint[(maxbin+1)];
-	double* histcyl110 = new double[(maxbin+1)];
-	double* histcyl112 = new double[(maxbin+1)];
-	double* histcyl220 = new double[(maxbin+1)];
+	rbin_t = maxbin+1;
+	hist000    = new bigint[rbin_t];
+	hist110    = new double[rbin_t];
+	hist112    = new double[rbin_t];
+	hist220    = new double[rbin_t];
+/* 	histcyl000 = new bigint[(rbin_t)];
+ * 	histcyl110 = new double[(rbin_t)];
+ * 	histcyl112 = new double[(rbin_t)];
+ * 	histcyl220 = new double[(rbin_t)];
+ */
+
+	ca_radius = new double[rbin_t];
+	ca_g000 = new double[rbin_t];
+	ca_h110 = new double[rbin_t];
+	ca_h112 = new double[rbin_t];
+	ca_h220 = new double[rbin_t];
+/* 	ca_gcyl000 = new double[rbin_t];
+ * 	ca_hcyl110 = new double[rbin_t];
+ * 	ca_hcyl112 = new double[rbin_t];
+ * 	ca_hcyl220 = new double[rbin_t];
+ */
 	for(i=0; i<=maxbin; i++) {
 		hist000[i] = 0;
 		hist110[i] = 0.;
 		hist112[i] = 0.;
 		hist220[i] = 0.;
-		histcyl000[i] = 0;
-		histcyl110[i] = 0;
-		histcyl112[i] = 0;
-		histcyl220[i] = 0;
+/* 		histcyl000[i] = 0;
+ * 		histcyl110[i] = 0;
+ * 		histcyl112[i] = 0;
+ * 		histcyl220[i] = 0;
+ */
+		ca_radius[i]  = 0.;
+		ca_g000[i] = 0 ;
+		ca_h110[i] = 0 ;
+		ca_h112[i] = 0 ;
+		ca_h220[i] = 0 ;
 	}
 
 	real si_dot_sj, si_dot_rij, sj_dot_rij, si[3],sj[3];
@@ -646,16 +379,17 @@ void makeRDF::calcRDF_anisotropy () {
 						hist112[bin] += 3.0*si_dot_rij*sj_dot_rij-si_dot_sj;
 						hist220[bin] += 3.0*(si_dot_sj*si_dot_sj) -1.;
 					}
-					if ( rhobin <=maxbin && z1 < halfDz) {
-						si_dot_sj = VDOT3(si,sj);
-						si_dot_rij= VDOT3(si,rij)/r1;
-						sj_dot_rij= VDOT3(sj,rij)/r1;
-						histcyl000[rhobin] +=1 ;
-						histcyl110[rhobin] +=si_dot_sj;
-//						printf("%f %f %f\n", si_dot_sj, si_dot_rij, histcyl110[rhobin] );
-						histcyl112[rhobin] +=3.0*si_dot_rij*sj_dot_rij-si_dot_sj;
-						histcyl220[rhobin] +=3.0*(si_dot_sj*si_dot_sj) -1.;
-					}
+/* 					if ( rhobin <=maxbin && z1 < halfDz) {
+ * 						si_dot_sj = VDOT3(si,sj);
+ * 						si_dot_rij= VDOT3(si,rij)/r1;
+ * 						sj_dot_rij= VDOT3(sj,rij)/r1;
+ * 						histcyl000[rhobin] +=1 ;
+ * 						histcyl110[rhobin] +=si_dot_sj;
+ * //						printf("%f %f %f\n", si_dot_sj, si_dot_rij, histcyl110[rhobin] );
+ * 						histcyl112[rhobin] +=3.0*si_dot_rij*sj_dot_rij-si_dot_sj;
+ * 						histcyl220[rhobin] +=3.0*(si_dot_sj*si_dot_sj) -1.;
+ * 					}
+ */
 				}
 			}
 		}
@@ -668,10 +402,11 @@ void makeRDF::calcRDF_anisotropy () {
 	real norm112 = norm000*(2./3.);
 	real norm220 = norm000*2.5;
 
-	real normcyl000 = 1./(M_PI * var_r * var_z * phi * nsnap* maxAtom);
-	real normcyl110 = normcyl000*3.0;
-	real normcyl112 = normcyl000*(2./3.);
-	real normcyl220 = normcyl000*2.5;
+/* 	real normcyl000 = 1./(M_PI * var_r * var_z * phi * nsnap* maxAtom);
+ * 	real normcyl110 = normcyl000*3.0;
+ * 	real normcyl112 = normcyl000*(2./3.);
+ * 	real normcyl220 = normcyl000*2.5;
+ */
 	real rrr,rr, invr2, invr, zzz;
 	
 	char filename1[100] ="rdf00.info" ;
@@ -686,7 +421,6 @@ void makeRDF::calcRDF_anisotropy () {
 
 
 	FILE* fp_rdf = fopen(filename1,"w");
-	FILE* fp_rdfcyl = fopen(filename2,"w");
 /* 	if ( (periodicity[2])) 
  * 		fputs("##3d periodicity\n", fp_rdf);
  * 	else
@@ -700,27 +434,31 @@ void makeRDF::calcRDF_anisotropy () {
 		val110 = hist110[i]*norm110*invr2;
 		val112 = hist112[i]*norm112*invr2;
 		val220 = hist220[i]*norm220*invr2;
-		g000.insert( std::pair<real,real>( rrr,val000 ) );
-		h000.insert( std::pair<real,real>( rrr,val000-1. ) );
-		h110.insert( std::pair<real,real>( rrr,val110 ) );
-		h112.insert( std::pair<real,real>( rrr,val112 ) );
-		h220.insert( std::pair<real,real>( rrr,val220 ) );
+		ca_g000[i] = val000;
+		ca_h110[i] = val110;
+		ca_h112[i] = val112;
+		ca_h220[i] = val220;
+
 		fprintf(fp_rdf,"%lf %lf %lf %lf %lf\n", rrr,val000,val110,val112,val220);
 	}
-	for(i=1; i<=(maxbin); i++) {
-		rhobin = i;
-		rrr = (rhobin + 0.5) * var_r;
-		rr  = rrr- var_r;
-		invr = 1/rr;
-
-		val000 = double(histcyl000[i])*normcyl000*invr;
-		val110 = histcyl110[i]*normcyl110*invr;
-		val112 = histcyl112[i]*normcyl112*invr;
-		val220 = histcyl220[i]*normcyl220*invr;
-		fprintf(fp_rdfcyl,"%.5e %.5e %.5e %.5e %.5e %.5e \n", rrr, var_z,val000,val110,val112,val220);
-	}
 	fclose(fp_rdf);
-	fclose(fp_rdfcyl);
+	
+/* 	FILE* fp_rdfcyl = fopen(filename2,"w");
+ * 	for(i=1; i<=(maxbin); i++) {
+ * 		rhobin = i;
+ * 		rrr = (rhobin + 0.5) * var_r;
+ * 		rr  = rrr- var_r;
+ * 		invr = 1/rr;
+ * 
+ * 		val000 = double(histcyl000[i])*normcyl000*invr;
+ * 		val110 = histcyl110[i]*normcyl110*invr;
+ * 		val112 = histcyl112[i]*normcyl112*invr;
+ * 		val220 = histcyl220[i]*normcyl220*invr;
+ * 		fprintf(fp_rdfcyl,"%.5e %.5e %.5e %.5e %.5e %.5e \n", rrr, var_z,val000,val110,val112,val220);
+ * 	}
+ * 	fclose(fp_rdfcyl);
+ */
+
 }
 
 void makeRDF::calcRDF_cotype (int itype) {
@@ -890,11 +628,6 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			val110 = hist110[i]*norm110*invr2;
 			val112 = hist112[i]*norm112*invr2;
 			val220 = hist220[i]*norm220*invr2;
-			g000.insert( std::pair<real,real>( rrr,val000 ) );
-			h000.insert( std::pair<real,real>( rrr,val000-1. ) );
-			h110.insert( std::pair<real,real>( rrr,val110 ) );
-			h112.insert( std::pair<real,real>( rrr,val112 ) );
-			h220.insert( std::pair<real,real>( rrr,val220 ) );
 			fprintf(fp_rdf,"%lf %lf %lf %lf %lf\n", rrr,val000,val110,val112,val220);
 		}
 	} else {
@@ -903,8 +636,6 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			rr  = (i - 0.5) * var_r;
 			invr2= 1./(rr*rr+var_r*var_r/12.);
 			val000 = hist000[i]*norm000*(rr*rr+var_r*var_r*12.);
-			g000.insert( std::pair<real,real>( rrr,val000 ) );
-			h000.insert( std::pair<real,real>( rrr,val000-1. ) );
 			fprintf(fp_rdf,"%lf %lf\n", rrr,val000);
 		}
 	}

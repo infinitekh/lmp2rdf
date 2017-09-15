@@ -2,16 +2,16 @@
 #include<cstring>
 #include<cstdlib>
 #include <map>
-#include<list>
 #include<cmath>
 #include <cstdlib>
 #include"snapshot.h"
 #include"makeRDF.h"
+#include "kh_math_fourier.h"
 #include <cerrno>
 
 
 using namespace std;
-typedef std::list<Snapshot*> t_snaplist;
+typedef std::vector<Snapshot*> t_snaplist;
 typedef Snapshot* p_snapshot;
 
 void PrintHelp ( char *pName);
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 		++ n;
 	}
 
-	
+
 	if (argc>0) PrintHelp (filename);
 
 	printf("typei %d typej %d  argc %d\n", typei, typej, argc); 
@@ -79,12 +79,13 @@ int main(int argc, char** argv) {
 	//	makerRdf.calcRDF();
 	puts("calc RDF intertype");
 	makerRdf.calcRDF_inter_type(1,1, makerRdf.ANISO);
-	makerRdf.calcRDF_inter_type(1,2, makerRdf.ISO);
+//	makerRdf.calcRDF_inter_type(1,2, makerRdf.ISO);
 	puts("calc RDF end");
 	makerRdf.calcSSF_from_g ();
 /* 	makerRdf.calcSSF();
  * 	makerRdf.calcISF();
  */
+	exit(0);
 
 }
 

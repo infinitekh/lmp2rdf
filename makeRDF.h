@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include "snapshot.h"
+#include "kh_math_fourier.h"
 using namespace std;
 struct s_xyz {
 	real x, y ,z;
@@ -23,11 +24,13 @@ class makeRDF {
 public:
 	makeRDF(std::vector<Snapshot*> &_sl) ;
 	~makeRDF() { 
+		freeMem();
 		
-		delete [] tBuf;
-		delete [] avAcfST[0];
-		delete [] avAcfST;
-		delete [] valST;
+/* 		delete [] tBuf;
+ * 		delete [] avAcfST[0];
+ * 		delete [] avAcfST;
+ * 		delete [] valST;
+ */
 	};
 	typedef enum { ISO, ANISO } T_RDF;
 	bool flag_anisotropy;
@@ -35,6 +38,8 @@ public:
 
 	void calcRDF();
 	void calcRDF_inter_type (int i, int j, T_RDF rdftype );
+	void printRDF (int i, int j, T_RDF rdftype );
+
 	void calcP1z(int type);
 	void calcP1s(int type);
 	void calcSSF();
@@ -79,6 +84,7 @@ public:
 	map<real, real>& get_M_T();	
 
 	real box_x,box_y,box_z;
+	real hbox_x,hbox_y,hbox_z;
 	box3* box;
 	int maxSnap ;
 	real r_cut,q_cut;
@@ -88,6 +94,41 @@ public:
 	int maxbinq ;
 	real dq;
 	int maxAtom;
+
+	size_t  rbin_t;
+/* 	bigint* hist000;
+ * 	double* hist110;
+ * 	double* hist112;
+ * 	double* hist220;
+ * 
+ * 	bigint* histcyl000;
+ * 	double* histcyl110;
+ * 	double* histcyl112;
+ * 	double* histcyl220;
+ */
+
+	double* ca_radius;
+	double* ca_g000;
+	double* ca_h000;
+	double* ca_h110;
+	double* ca_h112;
+	double* ca_h220;
+	double* ca_gcyl000;
+	double* ca_hcyl110;
+	double* ca_hcyl112;
+	double* ca_hcyl220;
+
+
+	double* ca_c_q;
+	double* ca_q_radius;
+	double* ca_S_q;
+	double* ca_h000_q;
+	double* ca_h110_q;
+	double* ca_h112_q;
+	double* ca_h220_q;
+
+	double* ca_c_r;
+	double* ca_h_mod;
 private:
 	vector<real> vP1s;
 	vector<real> vP1zj;
@@ -97,35 +138,26 @@ private:
 	vector<real> vPmuz1z;
 	vector<real> vP1z;
 	vector<real> vP1zi;
-	map<real, real> F;	
-	map<real, real> M;	
-	map<real, real> M_L;	
-	map<real, real> M_T;	
-	map<real, real> S;	
-    map<real, real> c_q;
-	map<real, real> g000;	
-	map<real, real> h000;	
-	map<real, real> h110;	
-	map<real, real> h112;	
-	map<real, real> h220;	
-	map<real, real> h_q;	
 
 /* 	map<real, real> S_qr;	
  * 	map<real, real> S_qi;	
  * 	map<real, real> qlist;	
  */
 
-    void calcRDF_anisotropy_snap (Snapshot* snap);
+	void AllocMem();
+	void freeMem();
+	void calcRDF_anisotropy_snap (Snapshot* snap);
 
 	void calcRDF_isotropy ();
-	void calcRDF_cotype (int i);
+	void calcRDF_isotropy (int i, int j);
 	void calcRDF_anisotropy ();
+	void calcRDF_anisotropy (int i, int j);
 	void AccumSpacetimeCorr ();
 
 	void calcIntegrated_h000();
 	real var_k, var_r;
 	std::vector<Snapshot*> snaplist;
-	atom *atoms,*ppi,*ppj;
+	atom *first_atoms;
 };
 
 #endif   /* ----- #ifndef MAKERDF_H_INC  ----- */

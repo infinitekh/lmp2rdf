@@ -7,10 +7,9 @@
 #include <map>
 #include<list>
 #include<cmath>
+#include "kh_math_fourier.h"
 #define MAXLINE 256
 
-typedef long int bigint;
-typedef double real;
 
 static char line[MAXLINE];
 struct atom {

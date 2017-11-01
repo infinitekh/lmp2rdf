@@ -988,7 +988,6 @@ makeRDF::makeRDF(vector<Snapshot*> &_sl) {
 	maxbin = 200;
 	maxbinz = 5;
 	maxbins = 10;
-	maxbinq = 100;
 	
 
 
@@ -1017,7 +1016,9 @@ makeRDF::makeRDF(vector<Snapshot*> &_sl) {
 	r_cut= min_r/2.;
 	max_r= (box_x>box_y)?((box_x>box_z)?box_x:box_z):((box_y>box_z)?box_y:box_z);
 	q_cut= M_PI / max_r;
+	maxbinq = 100;
 	dq   = 2.*M_PI/ maxbinq;
+	dq   = 2.*M_PI/ r_cut;
 	var_r = r_cut/maxbin;
 	var_k = (4. /nFunCorr )*M_PI;
 	InitSpacetimeCorr ();

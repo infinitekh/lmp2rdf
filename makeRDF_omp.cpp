@@ -252,73 +252,106 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 				local_hist220[i] = 0.; 
 			}
 		}
-
+		int Box_replica= round(r_cut / box_x * 2.) ;
 		for ( int  ii =0; ii<maxAtom; ii++){
 			atom* ppi = &atoms[ii];
 			if ( ppi->type != itype) continue;
 			real si[3]= {ppi->mux,ppi->muy,ppi->muz};
 			//			zi = ppi->z-hbox_z;
 			for (int  jj =0; jj<maxAtom; jj++) { 
-				if ( ii==jj ) continue ;                // self term out
-				atom* ppj = &atoms[jj];
-				if ( ppj->type != jtype) continue;
-				//				zj = ppj->z - hbox_z;
+				if ( ii==jj ) //continue ;                // self term out
+				{
+					if (Box_replica == 0 ) continue;
+					for (int xxx=-Box_replica; xxx <=Box_replica ; xxx++) {
+						real xij =  xxx * box_x;
+						if (abs(xij) > r_cut ) continue;
+						for (int yyy=-Box_replica; yyy <=Box_replica ; yyy++) {
+							real yij =  yyy * box_y;
+							if (abs(yij) > r_cut ) continue;
+							for (int zzz=-Box_replica; zzz <=Box_replica ; zzz++) {
+								if ( (xxx == 0) && (yyy == 0) && (zzz == 0) ) continue; // self term out
+								real zij =  zzz * box_z;
+								if (abs(zij) > r_cut ) continue;
 
-				real xij = ppi->x - ppj->x;
-				if ( periodicity[0]){
-					while ( xij <-hbox_x) xij+=box_x;
-					while ( xij > hbox_x) xij-=box_x;
-				}
-				if ( xij> r_cut) continue;
+									real r1 = sqrt(xij*xij + yij*yij + zij*zij);
 
-				real yij = ppi->y - ppj->y;
-				if ( periodicity[1]){
-					while ( yij <-hbox_y) yij+=box_y;
-					while ( yij > hbox_y) yij-=box_y;
-				}
-				if ( yij> r_cut) continue;
+									if (r1 <r_cut){ 
+										int bin    = floor( r1/var_r);
+										local_hist000[bin] +=1;
+										if (rdftype == ANISO) {
+											real rij[3] = {xij,yij,zij};
+											real sj[3]= {si[0], si[1], si[2] };
 
-				real zij = ppi->z - ppj->z;
-				if ( periodicity[2]){
-					while ( zij <-hbox_z) zij+=box_z;
-					while ( zij > hbox_z) zij-=box_z;
-				}
-				if ( zij> r_cut) continue;
-
-				real r1 = sqrt(xij*xij+yij*yij+zij*zij);
-				/* 					rho1 = sqrt(xij*xij+yij*yij);
-				 * 					z1 = abs(zij); abszi=abs(zi); abszj=abs(zj);
-				 */
-				/* 					rhobin = static_cast<int>( rho1/var_r);
-				 * 					zibin  = static_cast<int>( floor(abszi/var_z));
-				 * 					zjbin  = static_cast<int>( floor(abszj/var_z));
-				 */
-
-				if (r1 <r_cut){ 
-					int bin    = static_cast<int>( r1/var_r);
-					local_hist000[bin] +=1;
-					if (rdftype == ANISO) {
-						real rij[3] = {xij,yij,zij};
-						real sj[3]= {ppj->mux,ppj->muy,ppj->muz};
-
-						real si_dot_sj = VDOT3(si,sj);
-						real si_dot_rij= VDOT3(si,rij);
-						real sj_dot_rij= VDOT3(sj,rij);
-						local_hist110[bin] += si_dot_sj;
-						local_hist112[bin] += 3.0*si_dot_rij*sj_dot_rij/(r1*r1)-si_dot_sj;
-						local_hist220[bin] += 3.0*(si_dot_sj*si_dot_sj) -1.;
+											real si_dot_sj = VDOT3(si,sj);
+											real si_dot_rij= VDOT3(si,rij);
+											real sj_dot_rij= VDOT3(sj,rij);
+											local_hist110[bin] += si_dot_sj;
+											local_hist112[bin] += 3.0*si_dot_rij*sj_dot_rij/(r1*r1)-si_dot_sj;
+											local_hist220[bin] += 3.0*(si_dot_sj*si_dot_sj) -1.;
+										}
+									}
+							}
+						}
 					}
 				}
-				/* 					if ( rhobin <=maxbin && zibin < maxbinz && zjbin < maxbinz) {
-				 * 						allbin = maxbin*maxbinz*zibin + zjbin*maxbin+ rhobin;
-				 * 						if( (signbit(zi) xor signbit(zj)) ==0 ) histszz1[allbin] +=1 ;
-				 * 						else histszz2[allbin] +=1 ;
-				 * 					}
-				 */
+				else {
+					atom* ppj = &atoms[jj];
+					if ( ppj->type != jtype) continue;
+					//				zj = ppj->z - hbox_z;
+
+					real xij_orig = ppi->x - ppj->x;
+					if ( periodicity[0]){
+						while ( xij_orig <-hbox_x) xij_orig+=box_x;
+						while ( xij_orig > hbox_x) xij_orig-=box_x;
+					}
+
+					real yij_orig = ppi->y - ppj->y;
+					if ( periodicity[1]){
+						while ( yij_orig <-hbox_y) yij_orig+=box_y;
+						while ( yij_orig > hbox_y) yij_orig-=box_y;
+					}
+
+					real zij_orig = ppi->z - ppj->z;
+					if ( periodicity[2]){
+						while ( zij_orig <-hbox_z) zij_orig+=box_z;
+						while ( zij_orig > hbox_z) zij_orig-=box_z;
+					}
+
+					for (int xxx=-Box_replica; xxx <=Box_replica ; xxx++) {
+						real xij =  xxx*box_x + xij_orig;
+						if (abs(xij) > r_cut ) continue;
+						for (int yyy=-Box_replica; yyy <=Box_replica ; yyy++) {
+							real yij =  yyy*box_y + yij_orig;
+							if (abs(yij) > r_cut ) continue;
+							for (int zzz=-Box_replica; zzz <=Box_replica ; zzz++) {
+								real zij =  zzz*box_z + zij_orig;
+								if (abs(zij) > r_cut ) continue;
+								real r1 = sqrt(xij*xij + yij*yij + zij*zij);
+
+								if (r1 <r_cut){ 
+									int bin    = floor( r1/var_r);
+									local_hist000[bin] +=1;
+									if (rdftype == ANISO) {
+										real rij[3] = {xij,yij,zij};
+										real sj[3]= {ppj->mux,ppj->muy,ppj->muz};
+
+										real si_dot_sj = VDOT3(si,sj);
+										real si_dot_rij= VDOT3(si,rij);
+										real sj_dot_rij= VDOT3(sj,rij);
+										local_hist110[bin] += si_dot_sj;
+										local_hist112[bin] += 3.0*si_dot_rij*sj_dot_rij/(r1*r1)-si_dot_sj;
+										local_hist220[bin] += 3.0*(si_dot_sj*si_dot_sj) -1.;
+									}
+								}
+							}
+						}
+					}
+
+				}
 
 			}
 		}
-//		omp_set_lock(&writelock);
+		//		omp_set_lock(&writelock);
 #pragma omp critical 
 		{
 			for( int i=0; i<=maxbin; i++) {
@@ -369,12 +402,13 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 	ca_h110[0] = 0;
 	ca_h112[0] = 0;
 	ca_h220[0] = 0;
+	real drdr3 = var_r*var_r/3.0;
 	if (rdftype == ANISO) {
 #pragma omp parallel for
 		for (int i=0; i<=maxbin; i++){
 			real rrr = (i + 0.5) * var_r;
-			real rr  = (i - 0.5) * var_r;
-			real invr2= 1./(rr*rr+var_r*var_r/12.);
+			real rr  = (i ) * var_r;
+			real invr2= 1./(rr*rr+ r*var_r + drdr3 );
 			ca_radius[i] = rrr;
 			ca_g000[i] = double(hist000[i])*norm000*invr2;
 			ca_h000[i] = ca_g000[i]-1.0;
@@ -386,10 +420,10 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 #pragma omp parallel for
 		for (int i=0; i<=maxbin; i++){
 			real rrr = (i + 0.5) * var_r;
-			real rr  = (i - 0.5) * var_r;
-			real invr2= 1./(rr*rr+var_r*var_r/12.);
+			real rr  = (i ) * var_r;
+			real invr2= 1./(rr*rr+ r*var_r + drdr3 );
 			ca_radius[i] = rrr;
-			ca_g000[i] = hist000[i]*norm000*(rr*rr+var_r*var_r*12.);
+			ca_g000[i] = hist000[i]*norm000*invr2;
 			ca_h000[i] = ca_g000[i]-1.0;
 		}
 	}
@@ -636,10 +670,10 @@ makeRDF::makeRDF(vector<Snapshot*> &_sl) {
 	nValCorr=500; // # of average sets
 	step,stepCorr=1;
 	deltaT = 0.0001;
-	maxbin = 200;
+	maxbin = 400;
 	maxbinz = 5;
 	maxbins = 10;
-	maxbinq = 100;
+	maxbinq = 300;
 
 	snaplist = _sl;
 	vector<Snapshot*>::iterator firstsnap = (snaplist.begin());
@@ -675,10 +709,12 @@ makeRDF::makeRDF(vector<Snapshot*> &_sl) {
 	} else {
 		min_L= (box_x<box_y)?((box_x<box_z)?box_x:box_z):((box_y<box_z)?box_y:box_z);
 	}
-	r_cut= min(16.0,min_L/2.);
+	r_cut= min(32.0,min_L/2.);
+	
 	max_L= (box_x>box_y)?((box_x>box_z)?box_x:box_z):((box_y>box_z)?box_y:box_z);
 	q_cut= M_PI / max_L;
 	dq   = 2.*M_PI/ maxbinq;
+	dq   = 2.*M_PI/ max_L;
 	var_r = r_cut/maxbin;
 	var_k = (4. /nFunCorr )*M_PI;
 //	InitSpacetimeCorr ();

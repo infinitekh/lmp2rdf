@@ -408,7 +408,7 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 		for (int i=0; i<=maxbin; i++){
 			real rrr = (i + 0.5) * var_r;
 			real rr  = (i ) * var_r;
-			real invr2= 1./(rr*rr+ r*var_r + drdr3 );
+			real invr2= 1./(rr*rr+ rr*var_r + drdr3 );
 			ca_radius[i] = rrr;
 			ca_g000[i] = double(hist000[i])*norm000*invr2;
 			ca_h000[i] = ca_g000[i]-1.0;
@@ -421,7 +421,7 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 		for (int i=0; i<=maxbin; i++){
 			real rrr = (i + 0.5) * var_r;
 			real rr  = (i ) * var_r;
-			real invr2= 1./(rr*rr+ r*var_r + drdr3 );
+			real invr2= 1./(rr*rr+ rr*var_r + drdr3 );
 			ca_radius[i] = rrr;
 			ca_g000[i] = hist000[i]*norm000*invr2;
 			ca_h000[i] = ca_g000[i]-1.0;

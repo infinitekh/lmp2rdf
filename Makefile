@@ -1,6 +1,3 @@
-makeRDF.o: makeRDF.cpp makeRDF.h snapshot.h
-main.o: main.cpp snapshot.h makeRDF.h
-snapshot.o: snapshot.cpp snapshot.h
+lmprdf_omp.out:
+	g++ main.cpp makeRDF_omp.cpp kh_math_fourier.cpp  snapshot.cpp -O2 -fopenmp -o lmprdf_omp.out
 
-clean:
-	rm *.o

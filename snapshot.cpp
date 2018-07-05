@@ -20,7 +20,7 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 	ENUM_DUMP ret=SUCCESS;
 
 
-	bigint timestep;
+	long timestep;
 	int n_atoms;
 	real xlow,xhigh,ylow,yhigh,zlow,zhigh;
 	int id,type;
@@ -163,7 +163,7 @@ Snapshot* read_dump( FILE* fp) {
 	const char delimeter[] = " ";
 
 
-	bigint timestep;
+	long timestep;
 	int n_atoms;
 	real xlow,xhigh,ylow,yhigh,zlow,zhigh;
 	int id,type;
@@ -176,7 +176,7 @@ Snapshot* read_dump( FILE* fp) {
 		return static_cast<Snapshot*>(error("not ITEM: TIMESTEP"));
 
 	read_lines(1,fp);
-	timestep = atol(line);
+	timestep =  atol(line);
 	fprintf(stderr,"atol(line) = %ld\n"
 			"atoi(line) = %d\n"
 			, timestep,atoi(line));
@@ -216,7 +216,9 @@ Snapshot* read_dump( FILE* fp) {
 
 	
 	struct box3 box = {xlow,xhigh,ylow,yhigh,zlow,zhigh, pbc[0], pbc[1], pbc[2]};
-	struct Snapshot *snap   = new Snapshot(timestep,n_atoms);
+	struct Snapshot* snap = new struct Snapshot(timestep,n_atoms);
+
+
 	snap->setBox(box);
 
 	error(s_timestep);

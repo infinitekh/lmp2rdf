@@ -33,8 +33,8 @@ public:
  */
 	};
 	typedef enum { ISO, ANISO } T_RDF;
-	bool flag_anisotropy;
-	bool flag_SSF_from_g;
+	bool flag_anisotropy= false;
+	bool flag_SSF_from_g= false;
 
 	void calcRDF();
 	void calcRDF_inter_type (int i, int j, T_RDF rdftype );
@@ -42,19 +42,21 @@ public:
 
 	void calcP1z(int type);
 	void calcP1s(int type);
-	void calcSSF();
-	void calcSSF_from_g();
+	void calcSSF(T_RDF rdftype = ISO);
+	void calcSSF_from_g(T_RDF rdftype = ISO);
 	void calcISF();
 	void EvalSpacetimeCorr();
 	void InitSpacetimeCorr();
+	void StartMainProcess();
+	void StartPreProcess();
 
 	bool* periodicity;
 	// intput value
-	int nFunCorr ;
-	int limitCorrAv;
-	int nBuffCorr;   // nValCorr = number x nBuffCorr
-	int nValCorr; // # of average sets
-	int step,stepCorr;
+	int nFunCorr =4 ;
+	int limitCorrAv =200;
+	int nBuffCorr = 10;   // nValCorr = number x nBuffCorr
+	int nValCorr =500; // # of average sets
+	int step=1,stepCorr=1;
 	int countCorrAv;
 	static char* filename_template;
 	char filename0[100];
@@ -65,7 +67,7 @@ public:
 	TBuf *tBuf;
 	real **avAcfST, *valST;
 	int  n_valST;
-	real deltaT ;
+	real deltaT = 0.0001 ;
 	// Avf function
 	
 
@@ -88,20 +90,24 @@ public:
 	box3* box;
 	int maxSnap ;
 	real r_cut,q_cut;
-	int maxbin ;
-	int maxbinz ;
-	int maxbins ;
-	int maxbinq ;
+	int maxbin =200;
+	int maxbinz = 5;
+	int maxbins = 5;
+	int maxbinq = 100;
 	real dq;
 	int maxAtom;
+	void set_maxbin(int _maxbin){
+		maxbin = _maxbin;
+		var_r = r_cut/maxbin;
+	}
 
 	size_t  rbin_t;
-/* 	bigint* hist000;
+/* 	long* hist000;
  * 	double* hist110;
  * 	double* hist112;
  * 	double* hist220;
  * 
- * 	bigint* histcyl000;
+ * 	long* histcyl000;
  * 	double* histcyl110;
  * 	double* histcyl112;
  * 	double* histcyl220;
@@ -156,7 +162,7 @@ private:
 
 	void calcIntegrated_h000();
 	real var_k, var_r;
-	std::vector<Snapshot*> snaplist;
+	const std::vector<Snapshot*> snaplist;
 	atom *first_atoms;
 };
 

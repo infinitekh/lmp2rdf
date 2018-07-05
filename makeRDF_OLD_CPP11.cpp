@@ -197,7 +197,7 @@ void makeRDF::calcRDF() {
 		calcRDF_isotropy();
 }
 void makeRDF::calcRDF_isotropy () {
-	bigint i, ii, jj;
+	long i, ii, jj;
 	int nsnap =0;
 
 	int bin, rhobin, zibin, zjbin, maxallbin, allbin;
@@ -206,9 +206,9 @@ void makeRDF::calcRDF_isotropy () {
 	real hbox_x,hbox_y,hbox_z;
 	
 	maxallbin = maxbinz*maxbinz*maxbin;
-	bigint* hist000 = new bigint[maxbin+1];
-	bigint* histszz1 = new bigint[maxallbin+1];
-	bigint* histszz2 = new bigint[maxallbin+1];
+	long* hist000 = new long[maxbin+1];
+	long* histszz1 = new long[maxallbin+1];
+	long* histszz2 = new long[maxallbin+1];
 
 	// for slab
 	calcP1z (1);
@@ -318,11 +318,11 @@ void makeRDF::calcRDF_anisotropy () {
 	real hbox_x,hbox_y,hbox_z;
 
 
-	bigint* hist000 = new bigint[maxbin+1];
+	long* hist000 = new long[maxbin+1];
 	double* hist110 = new double[maxbin+1];
 	double* hist112 = new double[maxbin+1];
 	double* hist220 = new double[maxbin+1];
-	bigint* histcyl000 = new bigint[(maxbin+1)];
+	long* histcyl000 = new long[(maxbin+1)];
 	double* histcyl110 = new double[(maxbin+1)];
 	double* histcyl112 = new double[(maxbin+1)];
 	double* histcyl220 = new double[(maxbin+1)];
@@ -482,16 +482,16 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			 abszi,abszj,var_z=Dz,var_r = r_cut/maxbin;
 	real hbox_x,hbox_y,hbox_z;
 
-	typedef bigint *   p_bigint;
+	typedef long *   p_long;
 	typedef double *  p_double;
-	p_bigint hist000, histszz1, histszz2;
+	p_long hist000, histszz1, histszz2;
 	p_double hist110, hist112, hist220;
 	real si_dot_sj, si_dot_rij, sj_dot_rij, si[3],sj[3];
 
 	maxallbin = maxbinz*maxbinz*maxbin;
-	hist000 = new bigint[maxbin+1];
-	histszz1 = new bigint[maxallbin+1];
-	histszz2 = new bigint[maxallbin+1];
+	hist000 = new long[maxbin+1];
+	histszz1 = new long[maxallbin+1];
+	histszz2 = new long[maxallbin+1];
 	if ( rdftype == ANISO ) {
 		hist110 = new double[maxbin+1];
 		hist112 = new double[maxbin+1];
@@ -681,7 +681,7 @@ void makeRDF::calcP1z( int type) {
 	if ( periodicity[2])
 		fprintf(stderr, "WARNING : z-direction is not periodic.\n");
 
-	bigint* numSum = new bigint[maxbinz+1];
+	long* numSum = new long[maxbinz+1];
 	double* szSum = new double[maxbinz+1];
 	for(i=0; i<=maxbinz; i++) {
 		numSum[i] = szSum[i] =0.;
@@ -753,7 +753,7 @@ void makeRDF::calcP1s(int type) {
 	if (periodicity[0]&&periodicity[1] &&!periodicity[2])
 		return ;
 
-	bigint* numSum = new bigint[maxbins+1];
+	long* numSum = new long[maxbins+1];
 	double* DivMuSum = new double[maxbins+1];
 	for(i=0; i<=maxbins; i++) {
 		numSum[i] = DivMuSum[i] =0.;

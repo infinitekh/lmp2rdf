@@ -6,11 +6,13 @@
 #include <omp.h>
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
+#define R_CUT   120
 using namespace std;
+typedef std::vector<Snapshot*>::const_iterator citer;
 
-void makeRDF::calcSSF () {
+void makeRDF::calcSSF (T_RDF rdftype) {
 	if(flag_SSF_from_g)
-		calcSSF_from_g ();
+		calcSSF_from_g (rdftype);
 	else {
 	  int bin,i,iii,jjj,kkk;	
 		real qx,qy,qz,q1;	
@@ -29,7 +31,7 @@ void makeRDF::calcSSF () {
 
 		puts("");
 		int files=0;
-		for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+		for (citer iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 			maxAtom = (*iter)->n_atoms;
 			atom* atoms   = (*iter)->atoms;
 			box     = &(*iter)->box;
@@ -90,7 +92,7 @@ void makeRDF::calcSSF () {
 	}
 }
 
-void makeRDF::calcSSF_from_g() {
+void makeRDF::calcSSF_from_g(T_RDF rdftype) {
 	real Vol = box_x*box_y*box_z;
 	real phi = maxAtom / Vol;
 
@@ -100,9 +102,11 @@ void makeRDF::calcSSF_from_g() {
 		ca_q_radius[i] = q;
 		real h000_k = trapz_iso3D_forward_n( ca_radius,ca_h000,q,maxbin);
 		ca_h000_q[i] = h000_k ;
-		ca_h110_q[i] = trapz_iso3D_forward_n( ca_radius,ca_h110,q,maxbin);
-		ca_h220_q[i] = trapz_iso3D_forward_n( ca_radius,ca_h220,q,maxbin);
-		ca_h112_q[i] = trapz_iso3D_forward_with_l2_n( ca_radius,ca_h112,q,maxbin);
+		if (rdftype == ANISO) {
+			ca_h110_q[i] = trapz_iso3D_forward_n( ca_radius,ca_h110,q,maxbin);
+			ca_h220_q[i] = trapz_iso3D_forward_n( ca_radius,ca_h220,q,maxbin);
+			ca_h112_q[i] = trapz_iso3D_forward_with_l2_n( ca_radius,ca_h112,q,maxbin);
+		}
 		real S_q = 1.+ phi*h000_k;
 		ca_S_q[i] = S_q;
 		ca_c_q[i] = h000_k / S_q;
@@ -169,7 +173,7 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 	maxallbin = maxbinz*maxbinz*maxbin;
 	real abszi,abszj,var_z=Dz,var_r = r_cut/maxbin;
 
-	typedef bigint *   p_bigint;
+	typedef long *   p_long;
 	typedef double *  p_double;
 	real  si[3],sj[3];
 
@@ -177,16 +181,16 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 	n_types_2body = (n_types_2body* (n_types_2body+1)) /2;
 
 
-/* 	bigint*	hist000    = new bigint[rbin_t];
+/* 	long*	hist000    = new long[rbin_t];
  * 	double*	hist110    = new double[rbin_t];
  * 	double*	hist112    = new double[rbin_t];
  * 	double*	hist220    = new double[rbin_t];
  */
-	vector<bigint>	hist000(rbin_t);
+	vector<long>	hist000(rbin_t);
 	vector<double>	hist110(rbin_t);
 	vector<double>	hist112(rbin_t);
 	vector<double>	hist220(rbin_t);
-	/* 	histcyl000 = new bigint[(rbin_t)];
+	/* 	histcyl000 = new long[(rbin_t)];
 	 * 	histcyl110 = new double[(rbin_t)];
 	 * 	histcyl112 = new double[(rbin_t)];
 	 * 	histcyl220 = new double[(rbin_t)];
@@ -228,17 +232,19 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 /* 	omp_lock_t writelock;
  * 	omp_init_lock(&writelock);
  */
-
+	int progress_index = 0 ;
+	int progress= 0;
+	int progress_index_max = snaplist.size();
 #pragma omp parallel for 
 	for (int nsnap=0 ; nsnap< snaplist.size();  nsnap++) {
 		atom* atoms   = snaplist[nsnap]->atoms;
 
-/* 		bigint * local_hist000 = new bigint[maxbin+5];
+/* 		long * local_hist000 = new long[maxbin+5];
  * 		real * local_hist110 =   new double[maxbin+5];
  * 		real * local_hist112 =   new double[maxbin+5];
  * 		real * local_hist220 =   new double[maxbin+5];
  */
-		vector<bigint> local_hist000 (maxbin+5);
+		vector<long> local_hist000 (maxbin+5);
 		vector<real> local_hist110 (maxbin+5);
 		vector<real> local_hist112 (maxbin+5);
 		vector<real> local_hist220 (maxbin+5);
@@ -261,6 +267,8 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			for (int  jj =0; jj<maxAtom; jj++) { 
 				if ( ii==jj ) //continue ;                // self term out
 				{
+					// LOOK AT ME ... 
+					continue;
 					if (Box_replica == 0 ) continue;
 					for (int xxx=-Box_replica; xxx <=Box_replica ; xxx++) {
 						real xij =  xxx * box_x;
@@ -347,11 +355,10 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 						}
 					}
 
-				}
+				} 
 
-			}
-		}
-		//		omp_set_lock(&writelock);
+			}// jj < maxAtom
+		}// ii < maxAtom
 #pragma omp critical 
 		{
 			for( int i=0; i<=maxbin; i++) {
@@ -364,13 +371,15 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 					hist220[i] +=local_hist220[i] ;
 				}
 			}
-		}
-//		omp_unset_lock(&writelock);
-/* 		delete [] local_hist000;
- * 		delete [] local_hist110;
- * 		delete [] local_hist112;
- * 		delete [] local_hist220;
- */
+			progress_index ++;
+			int new_progress = 1000.0*progress_index/progress_index_max;
+			if (  new_progress != progress) {
+				progress = new_progress;
+				fprintf(stderr, "\r %4.1f%%(", progress*.1);
+			}
+		}  // omp parallel critical
+
+
 	} /// pragma omp for
 
 //	printf("thread num : %d\n", omp_get_thread_num());
@@ -427,7 +436,6 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 			ca_h000[i] = ca_g000[i]-1.0;
 		}
 	}
-
 	printRDF( itype,jtype, rdftype);
 }
 void makeRDF::printRDF (int itype, int jtype, T_RDF rdftype )
@@ -441,6 +449,7 @@ void makeRDF::printRDF (int itype, int jtype, T_RDF rdftype )
  * 	FILE* fp_rdfcyl = fopen(rdffilename,"w");
  */
 
+	fprintf(stderr, "makeRDF::printRDF %d - %d (type : %d)\n", itype,jtype,(int)rdftype);
 	if ( (periodicity[2])) 
 		fputs("##3d periodicity\n", fp_rdf);
 	else
@@ -468,7 +477,7 @@ void makeRDF::calcP1z( int type) {
 	if ( periodicity[2])
 		fprintf(stderr, "WARNING : z-direction is not periodic.\n");
 
-	bigint* numSum = new bigint[maxbinz+1];
+	long* numSum = new long[maxbinz+1];
 	double* szSum = new double[maxbinz+1];
 	for(i=0; i<=maxbinz; i++) {
 		numSum[i] = szSum[i] =0.;
@@ -476,7 +485,7 @@ void makeRDF::calcP1z( int type) {
 
 	real sz,zz, val, val1, hbox_z;
 
-	vector<Snapshot*>::iterator iter = snaplist.begin();
+	citer iter = snaplist.begin();
 	box     = &(*iter)->box;
 	box_x = box->xhigh-box->xlow; 
 	box_y = box->yhigh-box->ylow; 
@@ -540,7 +549,7 @@ void makeRDF::calcP1s(int type) {
 	if (periodicity[0]&&periodicity[1] &&!periodicity[2])
 		return ;
 
-	bigint* numSum = new bigint[maxbins+1];
+	long* numSum = new long[maxbins+1];
 	double* DivMuSum = new double[maxbins+1];
 	for(i=0; i<=maxbins; i++) {
 		numSum[i] = DivMuSum[i] =0.;
@@ -548,7 +557,7 @@ void makeRDF::calcP1s(int type) {
 
 	real mus, val, val1;
 
-	for (vector<Snapshot*>::iterator iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
+	for (citer iter =snaplist.begin() ; iter != snaplist.end();  iter++) {
 		nsnap ++;
 		maxAtom = (*iter)->n_atoms;
 		atom* atoms   = (*iter)->atoms;
@@ -593,6 +602,7 @@ void makeRDF::calcP1s(int type) {
 	delete numSum; delete DivMuSum;
 
 }
+
 void makeRDF::freeMem() 
 {
 
@@ -660,43 +670,35 @@ void makeRDF::AllocMem()
 
 }
 char* makeRDF::filename_template= "Corr_%s.out%ld";
-makeRDF::makeRDF(vector<Snapshot*> &_sl) { 
+makeRDF::makeRDF(vector<Snapshot*> &_sl) :
+		snaplist(_sl)
+{ 
 	// C++99 not allow non-const static member init
-	flag_anisotropy=0;
-	flag_SSF_from_g=0;
-	nFunCorr = 4;
-	limitCorrAv=200;
-	nBuffCorr=10;   // nValCorr = number x nBuffCorr
-	nValCorr=500; // # of average sets
-	step,stepCorr=1;
-	deltaT = 0.0001;
-	maxbin = 400;
-	maxbinz = 5;
-	maxbins = 10;
-	maxbinq = 300;
-
-	snaplist = _sl;
-	vector<Snapshot*>::iterator firstsnap = (snaplist.begin());
+//	InitSpacetimeCorr ();
+	StartPreProcess ();
+	AllocMem();
+};
+void makeRDF::StartPreProcess() {
+	// Get information from first snapshot.
+	citer firstsnap = (snaplist.begin());
 	first_atoms =  (*firstsnap)->atoms;
+	step    = (*firstsnap)->timestep ; 
 
 	maxAtom = (*firstsnap)->n_atoms;
 	maxSnap = snaplist.size();
 
-
 	box     = &((*firstsnap)->box);
 	box_x = box->xhigh-box->xlow; 
-	box_x = box->xhigh-box->xlow; 
 	box_y = box->yhigh-box->ylow; 
-	box_y = box->yhigh-box->ylow; 
-	box_z = box->zhigh-box->zlow;
 	box_z = box->zhigh-box->zlow;
 	periodicity = box->pbc;
 
 	double large_r = 1000, min_L, max_L;
 	hbox_x= box_x/2.; hbox_y= box_y/2.; hbox_z= box_z/2.;
-	step    = (*firstsnap)->timestep ; 
+	// Get time step between first two snapshots.
 	firstsnap++;
 	stepCorr= abs( (*firstsnap)->timestep - step);
+
 	printf("step Corr = %d %p %p\n", stepCorr,&(*firstsnap),&(*snaplist.begin()));
 	if(periodicity[0]||periodicity[1]||periodicity[2]) {
 		min_L = large_r;
@@ -709,14 +711,17 @@ makeRDF::makeRDF(vector<Snapshot*> &_sl) {
 	} else {
 		min_L= (box_x<box_y)?((box_x<box_z)?box_x:box_z):((box_y<box_z)?box_y:box_z);
 	}
-	r_cut= min(32.0,min_L/2.);
-	
+//	r_cut= min(32.0,min_L/2.);
+	r_cut =  R_CUT;
 	max_L= (box_x>box_y)?((box_x>box_z)?box_x:box_z):((box_y>box_z)?box_y:box_z);
 	q_cut= M_PI / max_L;
 	dq   = 2.*M_PI/ maxbinq;
 	dq   = 2.*M_PI/ max_L;
 	var_r = r_cut/maxbin;
 	var_k = (4. /nFunCorr )*M_PI;
-//	InitSpacetimeCorr ();
+
+}
+void makeRDF::StartMainProcess() {
+	var_r = r_cut/maxbin;
 	AllocMem();
-};
+}

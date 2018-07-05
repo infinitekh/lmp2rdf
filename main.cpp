@@ -8,38 +8,102 @@
 #include"makeRDF.h"
 #include "kh_math_fourier.h"
 #include <cerrno>
+#include <getopt.h>
 
 
 using namespace std;
 typedef std::vector<Snapshot*> t_snaplist;
 typedef Snapshot* p_snapshot;
+/* 
+			{"help",no_argument, 0, 'h'},
+			{"verbose", no_argument, 0, &verbose_flag, 1},
+			{"aniso", no_argument,0, 'I'},
+			{"iso", no_argument,0, 'i'},
+			{"maxbin", required_arguement,0, 'b'},
+			{"rcut", required_arguement,0, 'c'},
+			{0,0,0,0},
+ */
+void PrintHelp ( char *pName)
+{
+	printf ("Usage: %s  \n"
+			" if you want to use stdin, you should used /dev/stdin  \n"
+			"--aniso (I) :       get non isotropic terms h112 etc. \n"
+			"--iso   (i) : 			 get only isotropic terms g000 h000 \n"
+			"--maxbin (b) <maxbin(int)>  set Maxbin \n"
+			"--rcut (c) <rcut(double)>   set rcut   \n"
+			"default : iso maxbin(200) rcut(30) \n" 
+			, pName);
+	exit(0);
+}
 
-void PrintHelp ( char *pName);
-
+int verbose_flag=0;
 int main(int argc, char** argv) {
-	char* filename;
+	char filename[200];
 	int typei=1, typej=1;
 	FILE* input;
 	bool aniso=false;
 	int n =1;
-	if(-- argc <1 || ! strcmp (argv[1], "-h")) PrintHelp(argv[0]);
+	int maxbin=200;
+	double r_cut = 30;
 	
-	while (-- argc >= 0) {
-		if (! strcmp (argv[n], "-aniso")) aniso =true;
-//		else if (! strcmp (argv[n], "-i")) {typei = atoi (argv[n+1])  ; n++;argc--;}
-//		else if (! strcmp (argv[n], "-j")) {typej = atoi (argv[n+1]); ; n++;argc--;}
-		else {
-			filename = argv[n];
-			break;
+	int opt;
+	int option_index=0;
+
+	while (1) {
+		static struct option long_options[] = 
+		{ 
+			{"help",no_argument, 0, 'h'},
+			{"verbose", no_argument,  &verbose_flag, 1},
+			{"aniso", no_argument,0, 'I'},
+			{"iso", no_argument,0, 'i'},
+			{"maxbin", required_argument,0, 'b'},
+			{"rcut", required_argument,0, 'c'},
+			{0,0,0,0},
+		};
+		opt = getopt_long (argc,argv, "hIib:c:",
+				long_options, &option_index);
+		if ( opt == -1) break;
+
+		switch(opt) {
+			case 0: break;
+			case 'i': aniso = false; 
+								puts("isotropic on");
+								break;
+			case 'I': aniso = true; 
+								puts("anisotropic on");
+								break;
+			case 'b': maxbin = atoi(optarg);
+								printf("maxbin %d\n",maxbin);
+								break;
+			case 'c': r_cut = atof(optarg);
+								printf("cut-off length %.2g\n", r_cut);
+								break;
+			case 'h':
+			case '?': 
+								PrintHelp(argv[0]);
+							 break;
+			default: printf("pass through -%c \n", opt);
+							 break;
 		}
-		++ n;
 	}
 
 
-	if (argc>0) PrintHelp (filename);
 
 	printf("typei %d typej %d  argc %d\n", typei, typej, argc); 
+	for (int i =0;  i!= argc; ++i) {
+		printf("%s ", argv[i]);
+	}
+	puts("");
 
+
+//	for (int i = optind; i!= argc; ++i){
+//		strcpy(filename, argv
+//	}
+
+	if( optind < argc) {
+		strcpy( filename, argv[optind]);
+		printf("filename is %s \n", filename);
+	} else PrintHelp(argv[0]);
 
 	if(!strcmp(filename,"-")) {
 		input = stdin;
@@ -52,7 +116,7 @@ int main(int argc, char** argv) {
 		}   
 	}
 
-	input = fopen( filename ,"r");
+//	input = fopen( filename ,"r");
 	t_snaplist snaplist;
 	p_snapshot snap;
 
@@ -74,7 +138,10 @@ int main(int argc, char** argv) {
 
 	makeRDF makerRdf(snaplist);
 	makerRdf.flag_anisotropy =0;
+	makerRdf.maxbin = maxbin;
+	makerRdf.r_cut = r_cut;
 
+	makerRdf.StartMainProcess ();
 	puts("calc RDF begin");
 	//	makerRdf.calcRDF();
 	puts("calc RDF intertype");
@@ -89,20 +156,3 @@ int main(int argc, char** argv) {
 
 }
 
-void PrintHelp ( char *pName)
-{
-/* 	printf ("Usage: %s [-aniso  "
- * 			" input-file \n"
- * 			" if you want to use stdin, you should used -  \n"
- * 			, pName);
- */
-	printf ("Usage: %s  \n"
-			" if you want to use stdin, you should used /dev/stdin  \n"
-			, pName);
-/* 	printf ("Usage: %s [-aniso  -i itype -j jtype "
- * 			" input-file \n"
- * 			" if you want to use stdin, you should used -  \n"
- * 			, pName);
- */
-//	exit(0);
-}

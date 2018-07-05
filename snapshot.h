@@ -51,15 +51,16 @@ struct box3 {
 };
 
 typedef struct Snapshot {
-	bigint timestep;
+	long timestep;
 	int    n_atoms;
 	int    n_types;
 	long  bytes;
 	struct atom* atoms;
 	struct box3 box;
-	Snapshot(){
-	}
-	Snapshot(bigint _ts,int _n_atoms){
+/* 	Snapshot(){
+ * 	}
+ */
+	Snapshot(long _ts,int _n_atoms){
 		init(_ts,_n_atoms);
 	}
 /* 	Snapshot(const  Snaptshot &T) {
@@ -70,7 +71,7 @@ typedef struct Snapshot {
  * 		n_types     = T.n_types;
  * 	}
  */
-	void init(bigint _ts,int _n_atoms){
+	void init(long _ts,int _n_atoms){
 		this->timestep = _ts;
 		n_atoms = _n_atoms;
 		atoms = new struct atom[n_atoms];

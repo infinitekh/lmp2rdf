@@ -17,6 +17,7 @@
  *  GNU General Public License as published by the Free Software Foundation.
  */
 
+typedef std::vector<Snapshot*>::const_iterator citer;
 
 void makeRDF::EvalSpacetimeCorr () {
 	real b, c, c0, c1, c2,  s, s1, s2, w;

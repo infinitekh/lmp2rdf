@@ -21,7 +21,7 @@
 #include <vector>
 #include <map>
 #include <iterator>
-typedef long int bigint;
+
 typedef double real;
 using namespace std;
 real simson(vector<real> b, real dx) ;

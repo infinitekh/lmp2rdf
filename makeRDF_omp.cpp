@@ -111,8 +111,9 @@ void makeRDF::calcSSF_from_g(T_RDF rdftype) {
 		ca_S_q[i] = S_q;
 		ca_c_q[i] = h000_k / S_q;
 	}
-
-	FILE* fp_S = fopen("SSF.info","w");
+	char ssf_filename[100];
+	sprintf(ssf_filename,"SSF.info%s", ext);
+	FILE* fp_S = fopen(ssf_filename,"w");
 	fprintf(fp_S,"##q S_k h_k c_k h112_k\n");
 	for(int i=0; i<maxbinq ; i++) {
 		fprintf(fp_S,"%lf %lf %lf %lf %lf\n", ca_q_radius[i], 
@@ -440,9 +441,10 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 }
 void makeRDF::printRDF (int itype, int jtype, T_RDF rdftype )
 {
-	char rdffilename[100] ; sprintf(rdffilename, "rdf00_ij%d%d.info",itype, jtype);
+	char rdffilename[100] ; 
+	sprintf(rdffilename, "rdf00_ij%d%d.info%s",itype, jtype, ext);
 	if (rdftype == ANISO) {
-		sprintf(rdffilename, "rdf11_ij%d%d.info",itype, jtype);
+		sprintf(rdffilename, "rdf11_ij%d%d.info%s",itype, jtype, ext);
 	}	
 	FILE* fp_rdf = fopen(rdffilename,"w");
 /* 	sprintf(rdffilename, "rdfcyl_ij%d%d.info",itype, jtype);
@@ -669,6 +671,7 @@ void makeRDF::AllocMem()
 	ca_h_mod = new double[rbin_t];
 
 }
+
 char* makeRDF::filename_template= "Corr_%s.out%ld";
 makeRDF::makeRDF(vector<Snapshot*> &_sl) :
 		snaplist(_sl)

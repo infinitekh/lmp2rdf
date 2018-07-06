@@ -31,6 +31,7 @@ void PrintHelp ( char *pName)
 			"--iso   (i) : 			 get only isotropic terms g000 h000 \n"
 			"--maxbin (b) <maxbin(int)>  set Maxbin \n"
 			"--rcut (c) <rcut(double)>   set rcut   \n"
+			"--ext (x) .com .bat .1 .2  \n"
 			"default : iso maxbin(200) rcut(30) \n" 
 			, pName);
 	exit(0);
@@ -45,6 +46,7 @@ int main(int argc, char** argv) {
 	int n =1;
 	int maxbin=200;
 	double r_cut = 30;
+	char ext[30]= "";
 	
 	int opt;
 	int option_index=0;
@@ -53,37 +55,48 @@ int main(int argc, char** argv) {
 		static struct option long_options[] = 
 		{ 
 			{"help",no_argument, 0, 'h'},
+			{"help",no_argument, 0, 'h'},
 			{"verbose", no_argument,  &verbose_flag, 1},
 			{"aniso", no_argument,0, 'I'},
 			{"iso", no_argument,0, 'i'},
 			{"maxbin", required_argument,0, 'b'},
+			{"ext", required_argument,0, 'x'},
 			{"rcut", required_argument,0, 'c'},
 			{0,0,0,0},
 		};
-		opt = getopt_long (argc,argv, "hIib:c:",
+		opt = getopt_long (argc,argv, "hIib:c:x:",
 				long_options, &option_index);
 		if ( opt == -1) break;
 
 		switch(opt) {
 			case 0: break;
-			case 'i': aniso = false; 
-								puts("isotropic on");
-								break;
-			case 'I': aniso = true; 
-								puts("anisotropic on");
-								break;
-			case 'b': maxbin = atoi(optarg);
-								printf("maxbin %d\n",maxbin);
-								break;
-			case 'c': r_cut = atof(optarg);
-								printf("cut-off length %.2g\n", r_cut);
-								break;
+			case 'i': 
+							aniso = false; 
+							puts("isotropic on");
+							break;
+			case 'I': 
+							aniso = true; 
+							puts("anisotropic on");
+							break;
+			case 'x':  
+							strcpy(ext, optarg);
+							printf("maxbin %d\n",maxbin);
+							break;
+			case 'b': 
+							maxbin = atoi(optarg);
+							printf("maxbin %d\n",maxbin);
+							break;
+			case 'c': 
+							r_cut = atof(optarg);
+							printf("cut-off length %.2g\n", r_cut);
+							break;
 			case 'h':
 			case '?': 
-								PrintHelp(argv[0]);
-							 break;
-			default: printf("pass through -%c \n", opt);
-							 break;
+							PrintHelp(argv[0]);
+							break;
+			default: 
+							printf("pass through -%c \n", opt);
+							break;
 		}
 	}
 
@@ -140,6 +153,7 @@ int main(int argc, char** argv) {
 	makerRdf.flag_anisotropy =0;
 	makerRdf.maxbin = maxbin;
 	makerRdf.r_cut = r_cut;
+	strcpy(	makerRdf.ext , ext);
 
 	makerRdf.StartMainProcess ();
 	puts("calc RDF begin");

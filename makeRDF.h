@@ -39,6 +39,7 @@ public:
 	void calcRDF();
 	void calcRDF_inter_type (int i, int j, T_RDF rdftype );
 	void printRDF (int i, int j, T_RDF rdftype );
+	
 
 	void calcP1z(int type);
 	void calcP1s(int type);
@@ -135,6 +136,7 @@ public:
 
 	double* ca_c_r;
 	double* ca_h_mod;
+	char ext[30]="";
 private:
 	vector<real> vP1s;
 	vector<real> vP1zj;

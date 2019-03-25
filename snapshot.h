@@ -85,14 +85,30 @@ typedef struct Snapshot {
 	void setBox(box3 otherbox){
 		memcpy(&box,&otherbox,sizeof(otherbox));
 	}
+	int get_n_ptls (int type){
+		int _n_types = calc_n_type () ;
+		if( type<_n_types) return 0;
+		
+		int n_ptls=0;
+		for( int i =0; i<n_atoms; i++ ) {
+			if (type == atoms[i].type) 
+				n_ptls ++ ;
+		}
+		return n_ptls;
+	}
+
 	int calc_n_type (){
+		if(flag_calc_n_type) return n_types;
+
 		std::list<int> unique_type_list;
 		for( int i =0; i<n_atoms; i++ ) {
 			unique_type_list.push_back(atoms[i].type);
 		}
 		unique_type_list.sort();
 		unique_type_list.unique();
+
 		n_types = unique_type_list.size();
+		flag_calc_n_type = true;
 		return n_types;
 	}
 	
@@ -100,6 +116,8 @@ typedef struct Snapshot {
 
 		delete [] atoms;
 	}
+	protected:
+	bool flag_calc_n_type=false;
 } Snapshot;
 
 

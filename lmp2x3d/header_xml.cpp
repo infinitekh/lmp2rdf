@@ -30,12 +30,21 @@ typedef struct { real x,y,z; } real3d;
 using namespace std;
 real shift_periodic_position(const real x, real min,real max)
 {
-	real ret=x;
+	real value=x;
 	real width = max - min;
+	real ret = 0 ;
 	if (width <0 ) return x;
-	while (ret >=max)  ret-=width;
-	while (ret <min)  ret+=width;
-	return ret - x;
+	if (value >= max) {
+		while (value >=max)  {
+			value-=width;  ret -=width;
+		}
+	}
+	else {
+		while (value <min)  {
+			value+=width; ret += width;
+		}
+	}
+	return ret;
 }
 real len3(real* s3)
 {
@@ -55,6 +64,7 @@ void angle2rot4(real* s4,real* s3)
 #define BIG_HEIGHT 4.3
 #define FRAMERATE  30
 #define SMALL_RADIUS 0.1
+double big_radius = BIG_RADIUS;
 class PrintX3D {
 	public:
 		PrintX3D (std::list<Snapshot*> *_sl);
@@ -233,7 +243,7 @@ toField='set_translation'/>
 		void draw_dipole(FILE* fp,int id,real* v3, real* s4)
 		{ 
 		//	fprintf(fp,format_dipole.c_str(),id, v3[0],v3[1],v3[2],s4[0],s4[1],s4[2],s4[3] , BIG_RADIUS,id,BIG_RADIUS);
-		fprintf(fp,format_dipole.c_str(),id, v3[0],v3[1],v3[2],s4[0],s4[1],s4[2],s4[3]  ,BIG_RADIUS );
+		fprintf(fp,format_dipole.c_str(),id, v3[0],v3[1],v3[2],s4[0],s4[1],s4[2],s4[3]  ,big_radius );
 
 		}
 
@@ -250,7 +260,7 @@ toField='set_translation'/>
 		void draw_big(FILE* fp,
 				int id,real rx,real ry,real rz){
 			fprintf (fp,format_big.c_str(),
-					id,rx,ry,rz,BIG_RADIUS);
+					id,rx,ry,rz,big_radius);
 		}
 		void draw_bigPath(FILE* fp,int id){
 			fprintf (fp,format_bigPath.c_str(),
@@ -414,10 +424,17 @@ hello:
 int main(int argc, char** argv) {
 	char filename[100];
 	if(argc <2) {
-		perror("#run inputfilename");
+		perror("#run inputfilename\n ENVIRON RADIUS is big radius.");
 		return 1;
 	}
+	char* env = getenv("RADIUS");
 
+	if (env!= NULL) {
+		big_radius = atof(env);
+		if( big_radius<0.0 || big_radius > 1e3)
+			big_radius = BIG_RADIUS;
+	}
+	
 	strcpy( filename,argv[1]);
 	FILE* fp = fopen( filename ,"r");
 	std::list<Snapshot*> snaplist;

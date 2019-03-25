@@ -8,6 +8,8 @@
 #include "snapshot.h"
 #include "kh_math_fourier.h"
 using namespace std;
+typedef std::vector<Snapshot*>::const_iterator citer;
+
 struct s_xyz {
 	real x, y ,z;
 };
@@ -59,7 +61,7 @@ public:
 	int nValCorr =500; // # of average sets
 	int step=1,stepCorr=1;
 	int countCorrAv;
-	static char* filename_template;
+	static std::string filename_template;
 	char filename0[100];
 	char filename1[100];
 	char filename2[100];
@@ -165,6 +167,8 @@ private:
 	void calcIntegrated_h000();
 	real var_k, var_r;
 	const std::vector<Snapshot*> snaplist;
+	citer snapbegin;
+	citer snapend;
 	atom *first_atoms;
 };
 

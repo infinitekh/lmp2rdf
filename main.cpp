@@ -109,43 +109,46 @@ int main(int argc, char** argv) {
 	puts("");
 
 
-//	for (int i = optind; i!= argc; ++i){
-//		strcpy(filename, argv
-//	}
+	//	for (int i = optind; i!= argc; ++i){
+	//		strcpy(filename, argv
+	//	}
 
-	if( optind < argc) {
-		strcpy( filename, argv[optind]);
-		printf("filename is %s \n", filename);
-	} else PrintHelp(argv[0]);
-
-	if(!strcmp(filename,"-")) {
-		input = stdin;
-	} else {
-		input = fopen(filename,"r");
-		if (NULL == input) {
-			fprintf(stderr, "Unable to open '%s': %s\n",
-					filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}   
+	if (optind == argc ) {
+		PrintHelp(argv[0]);
 	}
-
-//	input = fopen( filename ,"r");
 	t_snaplist snaplist;
-	p_snapshot snap;
+	for( int opt_num = optind;   opt_num < argc; opt_num++)  {
+		strcpy( filename, argv[opt_num]);
+		printf("filename is %s \n", filename);
 
-	while(1)
-	{
-		snap =	read_dump(input);
-
-		if (snap==NULL) {
-			puts("read dump end");
-			break;
+		if(!strcmp(filename,"-")) {
+			input = stdin;
+		} else {
+			input = fopen(filename,"r");
+			if (NULL == input) {
+				fprintf(stderr, "Unable to open '%s': %s\n",
+						filename, strerror(errno));
+				exit(EXIT_FAILURE);
+			}   
 		}
-		snaplist.push_back(snap);
+
+		//	input = fopen( filename ,"r");
+
+		while(1)
+		{
+			p_snapshot snap =	read_dump(input);
+
+			if (snap==NULL) {
+				puts("read dump end");
+				break;
+			}
+			snaplist.push_back(snap);
+		}
 	}
 
 	if (snaplist.size() <5){
-		fprintf(stderr, "The # of snap is too small(%ld<5)!!\n", snaplist.size());
+		fprintf(stderr, "The # of snap is too small(%ld<5)!!\n", 
+				snaplist.size());
 		return 23;
 	}
 

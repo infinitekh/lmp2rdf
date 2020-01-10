@@ -57,9 +57,9 @@ typedef struct Snapshot {
 	long  bytes;
 	struct atom* atoms;
 	struct box3 box;
-/* 	Snapshot(){
- * 	}
- */
+	Snapshot(){
+	}
+
 	Snapshot(long _ts,int _n_atoms){
 		init(_ts,_n_atoms);
 	}
@@ -72,6 +72,7 @@ typedef struct Snapshot {
  * 	}
  */
 	void init(long _ts,int _n_atoms){
+		
 		this->timestep = _ts;
 		n_atoms = _n_atoms;
 		atoms = new struct atom[n_atoms];

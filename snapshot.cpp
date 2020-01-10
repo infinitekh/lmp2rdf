@@ -9,13 +9,15 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 	const char s_box_bounds_z[] = "ITEM: BOX BOUNDS pp pp ff";
 	const char s_box_bounds_xy[] = "ITEM: BOX BOUNDS ff ff pp";
 	const char s_box_bounds_xyz[] = "ITEM: BOX BOUNDS ff ff ff";
-	const char s_atoms[]    = "ITEM: ATOMS id type xu yu zu mux muy muz";
-	const char s_atoms_pos[]    = "ITEM: ATOMS id type xu yu zu";
+	const char s_atoms_rm[]    = "ITEM: ATOMS id type xu yu zu mux muy muz";
+	const char s_atoms_rvm[]    = "ITEM: ATOMS id type xu yu zu vx vy vz mux muy muz";
+	const char s_atoms_pos_r[]    = "ITEM: ATOMS id type xu yu zu";
 	const int i_timestep = strlen(s_timestep);
 	const int i_n_atoms = strlen(s_n_atoms);
 	const int i_box_bounds = strlen(s_box_bounds);
-	const int i_atoms = strlen(s_atoms);
-	const int i_atoms_pos = strlen(s_atoms_pos);
+	const int i_atoms_rm = strlen(s_atoms_rm);
+	const int i_atoms_pos_r = strlen(s_atoms_pos_r);
+	const int i_atoms_rvm = strlen(s_atoms_rvm);
 	const char delimeter[] = " ";
 	ENUM_DUMP ret=SUCCESS;
 
@@ -24,7 +26,9 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 	int n_atoms;
 	real xlow,xhigh,ylow,yhigh,zlow,zhigh;
 	int id,type;
-	real xu,yu,zu,mux,muy,muz;
+	real xu,yu,zu;
+	real vx,vy,vz; 
+	real mux,muy,muz;
 	int i;
 	struct atom* p_atom;
 
@@ -92,7 +96,30 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 
 	read_lines(1,fp);
 
-	if( strncmp(s_atoms,line,i_atoms) ==0) {
+	if( strncmp(s_atoms_rvm,line,i_atoms_rvm) ==0) {
+		for (i=0; i<n_atoms; i++){
+			read_lines(1,fp);
+			id =atoi(strtok(line, delimeter));
+
+			type = atoi(strtok(NULL,delimeter));
+			xu   = atof(strtok(NULL,delimeter));
+			yu   = atof(strtok(NULL,delimeter));
+			zu   = atof(strtok(NULL,delimeter));
+			vx   = atof(strtok(NULL,delimeter));
+			vy   = atof(strtok(NULL,delimeter));
+			vz   = atof(strtok(NULL,delimeter));
+			mux   = atof(strtok(NULL,delimeter));
+			muy   = atof(strtok(NULL,delimeter));
+			muz   = atof(strtok(NULL,delimeter));
+
+			p_atom = &(*snap).atoms[i];
+			p_atom->init(id,type,xu,yu,zu,mux,muy,muz);
+			/*	fprintf(stderr,"%d %d %f %f %f %f %f %f\n", 
+					id,type,
+					xu,yu,zu,
+					mux,muy,muz);*/
+		}
+	}else if( strncmp(s_atoms_rm,line,i_atoms_rm) ==0) {
 		for (i=0; i<n_atoms; i++){
 			read_lines(1,fp);
 			id =atoi(strtok(line, delimeter));
@@ -114,7 +141,7 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 					mux,muy,muz);*/
 		}
 	}
-	else if (strncmp(s_atoms_pos,line,i_atoms_pos) ==0 ) {
+	else if (strncmp(s_atoms_pos_r,line,i_atoms_pos_r) ==0 ) {
 		for (i=0; i<n_atoms; i++){
 			read_lines(1,fp);
 			id =atoi(strtok(line, delimeter));
@@ -153,13 +180,13 @@ Snapshot* read_dump( FILE* fp) {
 	const char s_box_bounds_z[] = "ITEM: BOX BOUNDS pp pp ff";
 	const char s_box_bounds_xy[] = "ITEM: BOX BOUNDS ff ff pp";
 	const char s_box_bounds_xyz[] = "ITEM: BOX BOUNDS ff ff ff";
-	const char s_atoms[]    = "ITEM: ATOMS id type xu yu zu mux muy muz";
-	const char s_atoms_pos[]    = "ITEM: ATOMS id type xu yu zu";
+	const char s_atoms_rm[]    = "ITEM: ATOMS id type xu yu zu mux muy muz";
+	const char s_atoms_pos_r[]    = "ITEM: ATOMS id type xu yu zu";
 	const int i_timestep = strlen(s_timestep);
 	const int i_n_atoms = strlen(s_n_atoms);
 	const int i_box_bounds = strlen(s_box_bounds);
-	const int i_atoms = strlen(s_atoms);
-	const int i_atoms_pos = strlen(s_atoms_pos);
+	const int i_atoms_rm = strlen(s_atoms_rm);
+	const int i_atoms_pos_r = strlen(s_atoms_pos_r);
 	const char delimeter[] = " ";
 
 
@@ -232,7 +259,7 @@ Snapshot* read_dump( FILE* fp) {
 
 	read_lines(1,fp);
 
-	if( strncmp(s_atoms,line,i_atoms) ==0) {
+	if( strncmp(s_atoms_rm,line,i_atoms_rm) ==0) {
 		for (i=0; i<n_atoms; i++){
 			read_lines(1,fp);
 			id =atoi(strtok(line, delimeter));
@@ -254,7 +281,7 @@ Snapshot* read_dump( FILE* fp) {
 					mux,muy,muz);*/
 		}
 	}
-	else if (strncmp(s_atoms_pos,line,i_atoms_pos) ==0 ) {
+	else if (strncmp(s_atoms_pos_r,line,i_atoms_pos_r) ==0 ) {
 		for (i=0; i<n_atoms; i++){
 			read_lines(1,fp);
 			id =atoi(strtok(line, delimeter));
@@ -279,6 +306,7 @@ Snapshot* read_dump( FILE* fp) {
 		error(line);
 		return static_cast<Snapshot*>(
 				error("not ITEM: ATOMS id type xu yu zu mux muy muz"
+					    "\n nor ITEM: ATOMS id type xu yu zu vx vy vz mux muy muz"
 					    "\n nor ITEM: ATOMS id type xu yu zu")
 				);
 	}

@@ -19,6 +19,7 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 	const int i_atoms_rvm = strlen(s_atoms_rvm);
 	const char delimeter[] = " ";
 
+	char errorstr[1000];
 
 	long timestep;
 	int n_atoms;
@@ -32,7 +33,8 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 
 	read_lines(1,fp);
 	if( strncmp(s_timestep,line,i_timestep) !=0) {
-		error("not ITEM: TIMESTEP");
+		sprintf(errorstr, "%s is not %s\n",s_timestep,line);
+		error(errorstr);
 		return ERR1;
 	}
 
@@ -172,7 +174,8 @@ ENUM_DUMP get_dump( FILE* fp, Snapshot* snap) {
 }
 Snapshot* read_dump( FILE* fp) {
 	struct Snapshot* snap = new struct Snapshot;
-	get_dump(fp, snap);
+	ENUM_DUMP ret = get_dump(fp, snap);
+	if (ret != SUCCESS) return NULL;
 	return snap;
 }
 void* error( const char * string ) {
@@ -185,6 +188,7 @@ void* error( const char * string ) {
 void read_lines(int n,FILE* fp)  // from lammps reader_native.cpp
 {
 	char *eof;
+
 	for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
 	if (eof == NULL) error("Unexpected end of dump file");
 }

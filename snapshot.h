@@ -8,7 +8,7 @@
 #include<list>
 #include<cmath>
 #include "kh_math_fourier.h"
-#define MAXLINE 256
+#define MAXLINE 512
 
 
 static char line[MAXLINE];

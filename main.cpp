@@ -31,6 +31,7 @@ void PrintHelp ( char *pName)
 			"--iso   (i) : 			 get only isotropic terms g000 h000 \n"
 			"--maxbin (b) <maxbin(int)>  set Maxbin \n"
 			"--rcut (c) <rcut(double)>   set rcut   \n"
+			"--Hq (H)   Get rcut   \n"
 			"--ext (x) .com .bat .1 .2  \n"
 			"default : iso maxbin(200) rcut(30) \n" 
 			, pName);
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
 	int typei=1, typej=1;
 	FILE* input;
 	bool aniso=false;
+	bool getHq=false;
 	int n =1;
 	int maxbin=200;
 	double r_cut = 30;
@@ -55,16 +57,16 @@ int main(int argc, char** argv) {
 		static struct option long_options[] = 
 		{ 
 			{"help",no_argument, 0, 'h'},
-			{"help",no_argument, 0, 'h'},
 			{"verbose", no_argument,  &verbose_flag, 1},
 			{"aniso", no_argument,0, 'I'},
 			{"iso", no_argument,0, 'i'},
+			{"Hq", no_argument,0, 'H'},
 			{"maxbin", required_argument,0, 'b'},
 			{"ext", required_argument,0, 'x'},
 			{"rcut", required_argument,0, 'c'},
 			{0,0,0,0},
 		};
-		opt = getopt_long (argc,argv, "hIib:c:x:",
+		opt = getopt_long (argc,argv, "hHIib:c:x:",
 				long_options, &option_index);
 		if ( opt == -1) break;
 
@@ -85,6 +87,10 @@ int main(int argc, char** argv) {
 			case 'b': 
 							maxbin = atoi(optarg);
 							printf("maxbin %d\n",maxbin);
+							break;
+			case 'H': 
+							getHq = true;
+							puts("Get Hq on!!");
 							break;
 			case 'c': 
 							r_cut = atof(optarg);
@@ -154,6 +160,7 @@ int main(int argc, char** argv) {
 
 	makeRDF makerRdf(snaplist);
 	makerRdf.flag_anisotropy =0;
+//	makeRdf.getHq = getHq;
 	makerRdf.maxbin = maxbin;
 	makerRdf.r_cut = r_cut;
 	strcpy(	makerRdf.ext , ext);
@@ -165,7 +172,15 @@ int main(int argc, char** argv) {
 	makerRdf.calcRDF_inter_type(1,1, makerRdf.ANISO);
 //	makerRdf.calcRDF_inter_type(1,2, makerRdf.ISO);
 	puts("calc RDF end");
-	makerRdf.calcSSF_from_g ();
+	makerRdf.calcSSF_from_g (makerRdf.ANISO);
+	puts("calc SSF from g end");
+
+	if(getHq) {
+		makerRdf.hydro_init();
+		makerRdf.hydro_run();
+		makerRdf.hydro_print();
+		makerRdf.hydro_end();
+	}
 /* 	makerRdf.calcSSF();
  * 	makerRdf.calcISF();
  */

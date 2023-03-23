@@ -48,6 +48,9 @@ struct box3 {
 	real ylow,yhigh;
 	real zlow,zhigh;
 	bool pbc[3];
+	real getVol() {
+		return (xhigh-xlow)*(yhigh-ylow)*(zhigh-zlow);
+	};
 };
 
 typedef struct Snapshot {
@@ -97,6 +100,9 @@ typedef struct Snapshot {
 		}
 		return n_ptls;
 	}
+	real getVol() {
+		return (box.xhigh-box.xlow)*(box.yhigh-box.ylow)*(box.zhigh-box.zlow);
+	};
 
 	int calc_n_type (){
 		if(flag_calc_n_type) return n_types;

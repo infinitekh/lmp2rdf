@@ -2,11 +2,13 @@
 #include <unistd.h>
 #include <memory>
 #include <vector>
+#include <algorithm> // std::fill
 #include "kh_math_fourier.h"
 #include <omp.h>
 #define Dz     (2)
 #define halfDz     (Dz/2.0)
 #define R_CUT   120
+#include "hydro_math.h"
 
 void makeRDF::calcSSF (T_RDF rdftype) {
 	if(flag_SSF_from_g)
@@ -16,16 +18,17 @@ void makeRDF::calcSSF (T_RDF rdftype) {
 		real qx,qy,qz,q1;	
 		real x,y,z;
 		int id;
-		real* qlist = new real [2*maxbinq+1];
+		real* qlist = new real [maxbinq];
 		real* hist  = new real [maxbinq+2];
 		real* S_qr  = new real [maxbinq+2];
 		real* S_qi  = new real [maxbinq+2];
 		FILE* fp_out;
 		fp_out = fopen("SSF_direct.info", "w");
 
-		dq = (4.*M_PI / maxbinq);
-		for ( int i = 0; i < 2*maxbinq+1; i += 1 )
-			qlist[i] = -2.*M_PI+ dq * i;
+		dq = 2*M_PI/64;
+		for ( int i = 0; i <= maxbinq; i += 1 ){
+			qlist[i] =  dq * i;
+		}
 
 		puts("");
 		int files=0;
@@ -42,21 +45,26 @@ void makeRDF::calcSSF (T_RDF rdftype) {
 				printf("\r%5dth-Snapshots(%ld) %4dth-atoms(%d)", files,snaplist.size(), id+1,maxAtom);
 				fflush(stdout);
 				x = ppi->x; y = ppi->y; z = ppi->z;
-				for ( iii = 0; iii < 2*maxbinq+1; iii += 1 ) {
+				for ( iii = 0; iii <= maxbinq; iii += 1 ) {
 					qx = qlist[iii];		
-					for ( jjj = 0; jjj < 2*maxbinq+1; jjj += 1 ) {
-						qy = qlist[jjj];
-						for ( kkk = 0; kkk < 2*maxbinq+1; kkk += 1 ) {
-							qz = qlist[kkk];
-							q1 = sqrt(qx*qx+qy*qy+qz*qz);
-							bin = int(ceil(q1/dq));
-							if (bin <= maxbinq) {
-								hist[bin] += 1;
-								S_qr[bin] += cos( qx* x+qy*y+qz* z);
-								S_qi[bin] += sin( qx* x+qy*y+qz* z);
-							}
-						}
-					}
+					qy = qlist[iii];		
+					qz = qlist[iii];		
+					bin = iii;
+					hist[bin] += 1;
+					S_qr[bin] += cos( qx* x);
+					S_qi[bin] += sin( qx* x);
+
+					hist[bin] += 1;
+					S_qr[bin] += cos( qy*y);
+					S_qi[bin] += sin( qy*y);
+
+					hist[bin] += 1;
+					S_qr[bin] += cos( qz* z);
+					S_qi[bin] += sin( qz* z);
+
+
+
+					
 				}
 			}
 		}
@@ -64,20 +72,22 @@ void makeRDF::calcSSF (T_RDF rdftype) {
 		real norm_q = 4.0 * M_PI * dq * maxAtom * snaplist.size();
 
 		real qqq, value,value2;
-		for ( i = 0; i < maxbinq+1; i += 1 ){
-			qqq = ( i-0.5) * dq;
-			if (hist[i] ==0) {
+		for ( i = 1; i <= maxbinq; i += 1 ){
+			qqq = qlist[i];
+			if (hist[i] ==0.) {
 				value =0;
 				value2=0;
 			}
 			else {
-				value = sqrt(S_qr[i]*S_qr[i] + S_qi[i]*S_qi[i])/ norm_q/ ((qqq*qqq)+(dq*dq/12.0) ) ;
-				value2= sqrt(S_qr[i]*S_qr[i] + S_qi[i]*S_qi[i])/ maxAtom / hist[i]; 
+/* 				value = sqrt(S_qr[i]*S_qr[i] + S_qi[i]*S_qi[i])/ norm_q/ ((qqq*qqq)+(dq*dq/12.0) ) ;
+ * 				value2= sqrt(S_qr[i]*S_qr[i] + S_qi[i]*S_qi[i])/ maxAtom / hist[i]; 
+ */
+				value = (S_qr[i]*S_qr[i]+ S_qi[i]*S_qi[i]) / maxAtom/snaplist.size();
 			}
 			
 			fprintf(fp_out, "%le ", qqq);
 			fprintf(fp_out, "%le ", value);
-			fprintf(fp_out, "%le ", value2);
+//			fprintf(fp_out, "%le ", value2);
 			fprintf(fp_out, "\n");
 
 		}
@@ -189,39 +199,13 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 	 * 	histcyl112 = new double[(rbin_t)];
 	 * 	histcyl220 = new double[(rbin_t)];
 	 */
-	for(int i=0; i<=maxbin; i++) {
-		hist000[i] = 0;
-//		histcyl000[i] = 0;
-	}
-	if (rdftype == ANISO) {
-		for( int i=0; i<=maxbin; i++) {
-			/* 			hist110[i] = 0.; 
-			 * 			hist112[i] = 0.; 
-			 * 			hist220[i] = 0.; 
-			 * 		histcyl110[i] = 0;
-			 * 		histcyl112[i] = 0;
-			 * 		histcyl220[i] = 0;
-			 */
-		}
-	}
-/* 	// for slab
- * 	calcP1z ( itype) ;
- * 	vP1zi.resize( vP1z.size() );
- * 	vP1zj.resize( vP1z.size() );
- * 	printf("%ld  \n", vP1z.size() );
- * 	printf("%ld  \n", vP1zi.size() );
- * 	printf("%ld  \n", vP1zj.size() );
- * 	copy(vP1z.begin(), vP1z.end(), vP1zi.begin());
- * 	if ( itype!= jtype) calcP1z(jtype);
- * 	copy(vP1z.begin(), vP1z.end(), vP1zj.begin());
- */
+	std::fill(hist000.begin(),hist000.end(), 0l);
+	std::fill(hist110.begin(),hist110.end(), 0.0);
+	std::fill(hist112.begin(),hist112.end(), 0.0);
+	std::fill(hist220.begin(),hist220.end(), 0.0);
+
 
 	
-/* 	for( int i=0; i<=maxallbin; i++) {
- * 		histszz1[i] = 0;
- * 		histszz2[i] = 0;
- * 	}
- */
 
 /* 	omp_lock_t writelock;
  * 	omp_init_lock(&writelock);
@@ -243,14 +227,12 @@ void makeRDF::calcRDF_inter_type (int itype, int jtype, T_RDF rdftype) {
 		vector<real> local_hist112 (maxbin+5);
 		vector<real> local_hist220 (maxbin+5);
 		for(int i=0; i<=maxbin; i++) {
-			local_hist000[i] = 0;
+			std::fill(local_hist000.begin(),local_hist000.end(), 0l);
 		}
 		if (rdftype == ANISO) {
-			for(int i=0; i<=maxbin; i++) {
-				local_hist110[i] = 0.; 
-				local_hist112[i] = 0.; 
-				local_hist220[i] = 0.; 
-			}
+			std::fill(local_hist110.begin(),local_hist110.end(), 0.0);
+			std::fill(local_hist112.begin(),local_hist112.end(), 0.0);
+			std::fill(local_hist220.begin(),local_hist220.end(), 0.0);
 		}
 		int Box_replica= round(r_cut / box_x * 2.) ;
 		for ( int  ii =0; ii<maxAtom; ii++){
@@ -728,4 +710,45 @@ void makeRDF::StartPreProcess() {
 void makeRDF::StartMainProcess() {
 	var_r = r_cut/maxbin;
 	AllocMem();
+}
+void makeRDF::hydro_init() {
+		real vol  = box->getVol();
+		real a = 4.024635;
+
+		hydro_function = new Hydrodynamic_Function();
+	  hydro_function->init(maxbinq,maxbin,maxAtom, var_r,var_k,a,vol,ca_g000,ca_h000);
+}
+void makeRDF::hydro_run(){
+	hydro_function->run();
+};
+void makeRDF::hydro_print() 
+{
+/* 	char mobilityfilename[100];
+ * 	sprintf(mobilityfilename, "rdf_mobility.info%s", ext);
+ * 	FILE* fp_mobility = fopen(mobilityfilename,"w");
+ * 	fprintf(fp_mobility,"radius g000 h000 Ds=%lf", hydro_function->getD_s());
+ * 	for (int i=0; i<=maxbin; i++){
+ * 		fprintf(fp_mobility,"%lf %lf %lf\n", ca_radius[i],ca_g000[i], ca_h000[i]);
+ * 	}
+ * 	fclose(fp_mobility);
+ */
+
+
+	char mobility2filename[100];
+	sprintf(mobility2filename, "rdf_mobility2.info%s", ext);
+	FILE* fp_mobility2 = fopen(mobility2filename,"w");
+
+	fprintf(fp_mobility2,"#q S_k h000 cq  c112 h(q) Ds=%lf\n", hydro_function->getD_s());
+	double q_back = -1.;
+	for (int i=0; i<=maxbinq; i++){
+		if (q_back < ca_q_radius[i]) {
+			fprintf(fp_mobility2,"%lf %lf %lf %lf %lf %lf\n", ca_q_radius[i], 
+					ca_S_q[i], ca_h000_q[i], ca_c_q[i], ca_h112_q[i], hydro_function->getHq()[i]);
+			q_back = ca_q_radius[i];
+		}
+	}
+	fclose(fp_mobility2);
+};
+void makeRDF::hydro_end(){
+	hydro_function->end();
 }

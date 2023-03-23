@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "snapshot.h"
 #include "kh_math_fourier.h"
+#include "hydro_math.h"
 using namespace std;
 typedef std::vector<Snapshot*>::const_iterator citer;
 
@@ -18,9 +19,9 @@ typedef struct {
 	int count;
 } TBuf;
 
+static const char* test_txt[] = { "par1", "par2", "par3"};
 #define VDOT3(a,b) ( a[0]*b[0] + a[1]*b[1] + a[2]*b[2] )
 #define Sqr(rrrr)   ( (rrrr)*(rrrr))
-
 
 class makeRDF {
 public:
@@ -72,7 +73,7 @@ public:
 	int  n_valST;
 	real deltaT = 0.0001 ;
 	// Avf function
-	
+	Hydrodynamic_Function* hydro_function;
 
 	void PrintSpacetimeCorr ();
 	void ZeroSpacetimeCorr ();
@@ -170,6 +171,11 @@ private:
 	citer snapbegin;
 	citer snapend;
 	atom *first_atoms;
+public:
+	void hydro_init();
+	void hydro_print();
+	void hydro_run();	
+	void hydro_end();
 };
 
 #endif   /* ----- #ifndef MAKERDF_H_INC  ----- */

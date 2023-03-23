@@ -34,13 +34,17 @@ real trapz_iso3D_forward_with_l2_n ( real* a, real* b, real q, int n) {
 	}
 	else{
 		real qr1 = a1*q, qrN = aN*q;
-		f1= a1*a1 *( (3./(qr1*qr1)-1)* sin(qr1)/qr1 - 3.*cos(qr1)/(qr1*qr1)     )* b1;
-		fN= aN*aN *( (3./(qrN*qrN)-1)* sin(qrN)/qrN - 3.*cos(qrN)/(qrN*qrN)     )* bN;
+		f1= a1*a1 *std::sph_bessel(2,qr1)* b1;
+		fN= aN*aN *std::sph_bessel(2,qrN)* bN;
+/* 		f1= a1*a1 *( (3./(qr1*qr1)-1)* sin(qr1)/qr1 - 3.*cos(qr1)/(qr1*qr1)     )* b1;
+ * 		fN= aN*aN *( (3./(qrN*qrN)-1)* sin(qrN)/qrN - 3.*cos(qrN)/(qrN*qrN)     )* bN;
+ */
 		sum = .5*(f1+fN);
 		for (int i=1 ;i<n-1; i++) {
 			ai= a[i]; bi= b[i];
 			qri = q* ai;
-			fi= ai*ai *( (3./(qri*qri)-1)* sin(qri)/qri - 3.*cos(qri)/(qri*qri)     )* bi;
+			fi= ai*ai *std::sph_bessel(2,qri)* bi;
+			printf("qr1 %10f integral block %10f \n", qri,fi);
 			sum += fi;
 		}
 		return -norm*sum*dr;

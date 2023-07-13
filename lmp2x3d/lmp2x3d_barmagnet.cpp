@@ -24,7 +24,7 @@
 #include<vector>
 #include<cmath>
 #include"snapshot.h"
-#define NCell  0
+#define NCell  1
 
 typedef struct { real x,y,z; } real3d;
 using namespace std;
@@ -180,7 +180,7 @@ rotation="%.3f %.3f %.3f %.3f" scale="0.8 1.2 0.8">
 <Shape>
 <Appearance>
 <Material/>
-<PixelTexture image='1 2 4 0xFF0000ff  0x0000FFFF' repeatS='FALSE' repeatT='FALSE' />
+<PixelTexture image='1 4 4 0xFF0000ff 0xFF0000ff  0x0000FFFF 0x0000FFFF' repeatS='FALSE' repeatT='FALSE' />
 </Appearance>
 <Sphere radius="%.3f"/>
 </Shape>

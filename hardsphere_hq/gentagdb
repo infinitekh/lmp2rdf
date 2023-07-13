@@ -1,0 +1,11 @@
+#!/bin/bash
+#gentagfiles file list build script
+set -x
+find | grep "\.c$\|\.h$" | grep "\.\/arch\/x86" > cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/fs" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/mm" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/include\/asm-x86" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/include" | grep -v "\.\/include\/asm-" | grep -v "\.\/include\/config\/" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/kernel" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/block" >> cscope.files
+find | grep "\.c$\|\.h$" | grep "\.\/lib" >> cscope.files

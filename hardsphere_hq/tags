@@ -1,0 +1,61 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	//
+D_s	hydro_math.h	/^		double D_s;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double
+Hydrodynamic_Function	hydro_math.cpp	/^Hydrodynamic_Function::Hydrodynamic_Function(){$/;"	f	class:Hydrodynamic_Function
+Hydrodynamic_Function	hydro_math.h	/^class Hydrodynamic_Function {$/;"	c
+N	hydro_math.h	/^		int N;$/;"	m	class:Hydrodynamic_Function	typeref:typename:int
+V	hydro_math.h	/^		double V;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double
+a	hydro_math.h	/^		double a;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double
+alloc_mem	hydro_math.cpp	/^void Hydrodynamic_Function::alloc_mem() {$/;"	f	class:Hydrodynamic_Function	typeref:typename:void
+calculated	hydro_math.h	/^	int calculated   :1 ;$/;"	m	struct:ihf_s	typeref:typename:int:1
+calculated	hydro_math.h	/^	int calculated   :1 ;$/;"	m	struct:mf_s	typeref:typename:int:1
+copy_ihf	hydro_math.cpp	/^void copy_ihf(ihf* lhs,const ihf* rhs) {$/;"	f	typeref:typename:void
+cosx	hydro_math.h	/^	double invx3,cosx, cosx_x;$/;"	m	struct:ihf_s	typeref:typename:double
+cosx_x	hydro_math.h	/^	double invx3,cosx, cosx_x;$/;"	m	struct:ihf_s	typeref:typename:double
+end	hydro_math.cpp	/^void Hydrodynamic_Function::end() {$/;"	f	class:Hydrodynamic_Function	typeref:typename:void
+free_mem	hydro_math.cpp	/^void Hydrodynamic_Function::free_mem() {$/;"	f	class:Hydrodynamic_Function	typeref:typename:void
+g000	hydro_math.h	/^		double* g000;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double *
+getD_s	hydro_math.h	/^		double getD_s() { return D_s;};$/;"	f	class:Hydrodynamic_Function	typeref:typename:double
+getHq	hydro_math.h	/^		double* getHq() { return hf_all;};$/;"	f	class:Hydrodynamic_Function	typeref:typename:double *
+h000	hydro_math.h	/^		double* h000;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double *
+h1	hydro_math.h	/^	double h1,h2;$/;"	m	struct:ihf_s	typeref:typename:double
+h2	hydro_math.h	/^	double h1,h2;$/;"	m	struct:ihf_s	typeref:typename:double
+hf_all	hydro_math.h	/^		double* hf_all =NULL;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double *
+ihf	hydro_math.h	/^} ihf;$/;"	t	typeref:struct:ihf_s
+ihf_all	hydro_math.h	/^		ihf** ihf_all =NULL;$/;"	m	class:Hydrodynamic_Function	typeref:typename:ihf **
+ihf_default	hydro_math.cpp	/^const ihf ihf_default = { .calculated = 0};$/;"	v	typeref:typename:const ihf
+ihf_s	hydro_math.h	/^typedef struct ihf_s {$/;"	s
+init	hydro_math.cpp	/^void Hydrodynamic_Function::init(int _kn, int _xn, int _N,double _r1, double  _k1, double _a,  d/;"	f	class:Hydrodynamic_Function	typeref:typename:void
+invx3	hydro_math.h	/^	double invx3,cosx, cosx_x;$/;"	m	struct:ihf_s	typeref:typename:double
+k1	hydro_math.h	/^		double r1, k1;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double
+kn	hydro_math.h	/^		int kn, xn;$/;"	m	class:Hydrodynamic_Function	typeref:typename:int
+main	main.cpp	/^int main(int argc, char const* argv[])$/;"	f	typeref:typename:int
+mf	hydro_math.h	/^} mf;$/;"	t	typeref:struct:mf_s
+mf_all	hydro_math.h	/^		mf* mf_all = NULL;$/;"	m	class:Hydrodynamic_Function	typeref:typename:mf *
+mf_default	hydro_math.cpp	/^const mf mf_default = { .calculated = 0, .part1=0, .part2=0, .part3=0};$/;"	v	typeref:typename:const mf
+mf_s	hydro_math.h	/^typedef struct mf_s {$/;"	s
+part1	hydro_math.h	/^	double part1 , part2, part3;$/;"	m	struct:mf_s	typeref:typename:double
+part2	hydro_math.h	/^	double part1 , part2, part3;$/;"	m	struct:mf_s	typeref:typename:double
+part3	hydro_math.h	/^	double part1 , part2, part3;$/;"	m	struct:mf_s	typeref:typename:double
+pihf	hydro_math.h	/^typedef ihf* pihf;$/;"	t	typeref:typename:ihf *
+pmf	hydro_math.h	/^typedef mf* pmf;$/;"	t	typeref:typename:mf *
+prepare_calculation	hydro_math.cpp	/^void Hydrodynamic_Function::prepare_calculation() {$/;"	f	class:Hydrodynamic_Function	typeref:typename:void
+r1	hydro_math.h	/^		double r1, k1;$/;"	m	class:Hydrodynamic_Function	typeref:typename:double
+run	hydro_math.cpp	/^int Hydrodynamic_Function::run()$/;"	f	class:Hydrodynamic_Function	typeref:typename:int
+run	hydro_math.cpp	/^int Hydrodynamic_Function::run(int argc, char const* argv[])$/;"	f	class:Hydrodynamic_Function	typeref:typename:int
+set_ihf	hydro_math.cpp	/^void set_ihf(ihf* pihf,double x) {$/;"	f	typeref:typename:void
+set_ihf_sinx_cosx	hydro_math.cpp	/^void set_ihf_sinx_cosx(ihf* pihf,double x, double sinx, double cosx) {$/;"	f	typeref:typename:void
+sinx	hydro_math.h	/^	double sinx,sinx_3_minus_x2;$/;"	m	struct:ihf_s	typeref:typename:double
+sinx_3_minus_x2	hydro_math.h	/^	double sinx,sinx_3_minus_x2;$/;"	m	struct:ihf_s	typeref:typename:double
+x	hydro_math.h	/^	double x,x2,x3;$/;"	m	struct:ihf_s	typeref:typename:double
+x2	hydro_math.h	/^	double x,x2,x3;$/;"	m	struct:ihf_s	typeref:typename:double
+x3	hydro_math.h	/^	double x,x2,x3;$/;"	m	struct:ihf_s	typeref:typename:double
+xn	hydro_math.h	/^		int kn, xn;$/;"	m	class:Hydrodynamic_Function	typeref:typename:int
+~Hydrodynamic_Function	hydro_math.cpp	/^Hydrodynamic_Function::~Hydrodynamic_Function(){$/;"	f	class:Hydrodynamic_Function
